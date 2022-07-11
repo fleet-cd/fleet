@@ -18,4 +18,10 @@ errors:
     docs: Fleet cargo not found
     safe-args:
       frn: string
+  InvalidFileType:
+    code: INVALID_ARGUMENT
+    statusCode: 400
+    docs: Invalid argument
+    safe-args:
+      expected: list<string>
     

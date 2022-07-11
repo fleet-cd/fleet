@@ -48,6 +48,8 @@ func New(logger zerolog.Logger, config config.Config) *Server {
 		Handler: &cargoSvc,
 	})
 
+	router.POST("/api/v1/ships/:shipFrn/manifest", HandleManifestUpload)
+
 	return server
 }
 
