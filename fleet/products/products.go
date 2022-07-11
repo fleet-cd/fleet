@@ -6,6 +6,7 @@ import (
 
 	"github.com/tgs266/fleet/fleet/utils"
 	"github.com/tgs266/fleet/frn"
+	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/cargo"
 	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/entities"
 	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/errors"
 	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/products"
@@ -75,4 +76,26 @@ func (ss *ProductService) GetProduct(frn string) (products.Product, error) {
 		SetModifiedAt(res.ModifiedAt).Build()
 
 	return result, nil
+}
+
+func (ss *ProductService) GetCargo(frn string) ([]cargo.Cargo, error) {
+
+	res, err := GetCargo(context.Background(), frn)
+	if err != nil {
+		return nil, errors.NewProductNotFound(err, frn)
+	}
+
+	results := []cargo.Cargo{}
+	for _, r := range res {
+		results = append(results, cargo.NewCargoBuilder().
+			SetFrn(r.Frn).
+			SetProductFrn(r.ProductFrn).
+			SetShipFrn(r.ShipFrn).
+			SetCreatedAt(r.CreatedAt).
+			SetModifiedAt(r.ModifiedAt).
+			Build(),
+		)
+	}
+
+	return results, nil
 }

@@ -10,7 +10,7 @@ types:
       fields:
         frn: common.CargoFrn
         productFrn: common.ProductFrn
-        shipFrm: common.ShipFrn
+        shipFrn: common.ShipFrn
         createdAt: datetime
         modifiedAt: datetime
     CreateCargoRequest:

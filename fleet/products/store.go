@@ -25,3 +25,12 @@ func ListProducts(ctx context.Context) ([]entities.ProductEntity, error) {
 	}
 	return persistence.DecodeCursor[entities.ProductEntity](ctx, cur)
 }
+
+func GetCargo(ctx context.Context, frn string) ([]entities.CargoEntity, error) {
+	col := persistence.GetCollection("cargo")
+	cur, err := col.Find(ctx, bson.M{"productFrn": frn}, &options.FindOptions{})
+	if err != nil {
+		return nil, err
+	}
+	return persistence.DecodeCursor[entities.CargoEntity](ctx, cur)
+}

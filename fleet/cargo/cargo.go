@@ -40,7 +40,7 @@ func (service *CargoService) CreateCargo(body cargo.CreateCargoRequest) (cargo.C
 	cargo := cargo.NewCargoBuilder().
 		SetFrn(entity.Frn).
 		SetProductFrn(entity.ProductFrn).
-		SetShipFrm(entity.ShipFrn).
+		SetShipFrn(entity.ShipFrn).
 		SetCreatedAt(entity.CreatedAt).
 		SetModifiedAt(entity.ModifiedAt)
 	return cargo.Build(), nil

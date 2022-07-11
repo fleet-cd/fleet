@@ -1,6 +1,7 @@
 package: com.fleet.products
 imports:
   - com.fleet.common
+  - com.fleet.cargo
 types:
   objects:
     Product:
@@ -26,6 +27,12 @@ services:
         http: GET /
         docs: list all products
         returns: list<Product>
+      createProduct:
+        http: POST /
+        docs: creates a new product
+        args:
+          body: CreateProductRequest
+        returns: Product
       getProduct:
         http: GET /{productFrn}
         docs: get single product
@@ -33,9 +40,10 @@ services:
           path:
             productFrn: string
         returns: Product
-      createProduct:
-        http: POST /
-        docs: creates a new product
+      getCargo:
+        http: GET /{productFrn}/cargo
+        docs: get all installations of a product
         args:
-          body: CreateProductRequest
-        returns: Product
+          path:
+            productFrn: string
+        returns: list<cargo.Cargo>
