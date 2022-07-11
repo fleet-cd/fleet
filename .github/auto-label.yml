@@ -1,0 +1,8 @@
+product: false
+requestsize:
+  enabled: true
+
+path:
+  pullrequest: true
+  paths:
+    rest-gen: 'rest-gen'
