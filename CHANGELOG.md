@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/fleet-cd/fleet/compare/v0.1.0...v0.2.0) (2022-07-11)
+
+
+### Features
+
+* add new cargo apis ([#5](https://github.com/fleet-cd/fleet/issues/5)) ([9bff1b9](https://github.com/fleet-cd/fleet/commit/9bff1b92a7ed32b643f69cec4352e4501ee69935))
+
 ## 0.1.0 (2022-07-11)
 
 
