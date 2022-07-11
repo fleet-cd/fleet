@@ -17,3 +17,25 @@ types:
       fields:
         name: string
         namespace: optional<string>
+
+services:
+  ProductService:
+    base-path: /api/v1/products
+    endpoints:
+      listProducts:
+        http: GET /
+        docs: list all products
+        returns: list<Product>
+      getProduct:
+        http: GET /{productFrn}
+        docs: get single product
+        args:
+          path:
+            productFrn: string
+        returns: Product
+      createProduct:
+        http: POST /
+        docs: creates a new product
+        args:
+          body: CreateProductRequest
+        returns: Product

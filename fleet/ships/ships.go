@@ -1,10 +1,9 @@
-package services
+package ships
 
 import (
 	"context"
 	"time"
 
-	"github.com/tgs266/fleet/fleet/persistence"
 	"github.com/tgs266/fleet/fleet/utils"
 	"github.com/tgs266/fleet/frn"
 	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/entities"
@@ -26,7 +25,7 @@ func (ss *ShipService) CreateShip(body ships.CreateShipRequest) (ships.Ship, err
 		SetModifiedAt(now).
 		SetFrn(shipFrn)
 
-	if err := persistence.CreateShip(context.Background(), entity.Build()); err != nil {
+	if err := CreateShip(context.Background(), entity.Build()); err != nil {
 		return ships.Ship{}, err
 	}
 
@@ -41,7 +40,7 @@ func (ss *ShipService) CreateShip(body ships.CreateShipRequest) (ships.Ship, err
 
 func (ss *ShipService) ListShips() ([]ships.Ship, error) {
 
-	res, err := persistence.ListShips(context.Background())
+	res, err := ListShips(context.Background())
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +62,7 @@ func (ss *ShipService) ListShips() ([]ships.Ship, error) {
 
 func (ss *ShipService) GetShip(shipFrn string) (ships.Ship, error) {
 
-	res, err := persistence.GetShip(context.Background(), shipFrn)
+	res, err := GetShip(context.Background(), shipFrn)
 	if err != nil {
 		return ships.Ship{}, errors.NewShipNotFound(err, shipFrn)
 	}

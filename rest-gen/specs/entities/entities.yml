@@ -11,3 +11,11 @@ types:
         namespace: string
         createdAt: datetime
         modifiedAt: datetime
+    ProductEntity:
+      builder: true
+      fields:
+        frn: common.ProductFrn
+        name: string
+        namespace: string
+        createdAt: datetime
+        modifiedAt: datetime

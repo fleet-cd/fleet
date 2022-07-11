@@ -5,7 +5,6 @@ import (
 
 	"github.com/rs/zerolog/log"
 	"github.com/tgs266/fleet/config"
-	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/entities"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -21,52 +20,59 @@ func Connect(config config.Config) {
 	}
 
 	db = client.Database(config.MongoDB.Database)
+	createCollection("ships")
+	createCollection("products")
 }
 
-func getCollection(collection string) *mongo.Collection {
+func createIndex(name string, opts *options.IndexOptions) mongo.IndexModel {
+	return mongo.IndexModel{
+		Keys: bson.M{
+			name: 1,
+		}, Options: &options.IndexOptions{},
+	}
+}
+
+func createCollection(collection string) {
+	createdAtIndex := createIndex("createdAt", options.Index())
+	modifiedAtIndex := createIndex("modifiedAt", options.Index())
+	t := new(bool)
+	*t = true
+	frnIndex := createIndex("frn", &options.IndexOptions{Unique: t})
+
 	col := db.Collection(collection)
+	col.Indexes().CreateOne(context.TODO(), createdAtIndex, options.CreateIndexes())
+	col.Indexes().CreateOne(context.TODO(), modifiedAtIndex, options.CreateIndexes())
+	col.Indexes().CreateOne(context.TODO(), frnIndex, options.CreateIndexes())
+}
+
+func GetCollection(collection string) *mongo.Collection {
+	col := db.Collection(collection)
+	col.Indexes().CreateOne(context.TODO(), mongo.IndexModel{})
 	return col
 }
 
-func CreateShip(ctx context.Context, ship entities.ShipEntity) error {
-	col := getCollection("ships")
-	_, err := col.InsertOne(ctx, ship)
+func FindOneByFrn[T any](ctx context.Context, collection string, frn string) (T, error) {
+	col := GetCollection(collection)
+	var val T
+	err := col.FindOne(ctx, bson.M{"frn": frn}, &options.FindOneOptions{}).Decode(&val)
+	return val, err
+}
+
+func InsertOneToCollection(ctx context.Context, collection string, object any) error {
+	col := GetCollection(collection)
+	_, err := col.InsertOne(ctx, object)
 	return err
 }
 
-func GetShip(ctx context.Context, frn string) (entities.ShipEntity, error) {
-	col := getCollection("ships")
-	var ship entities.ShipEntity
-	err := col.FindOne(ctx, bson.M{"frn": frn}, &options.FindOneOptions{}).Decode(&ship)
-	return ship, err
-}
-
-func ListShips(ctx context.Context) ([]entities.ShipEntity, error) {
-	col := getCollection("ships")
-	cur, err := col.Find(ctx, bson.M{}, &options.FindOptions{})
-	if err != nil {
-		return nil, err
-	}
-	results := []entities.ShipEntity{}
-	for cur.Next(context.TODO()) {
-		//Create a value into which the single document can be decoded
-		var elem entities.ShipEntity
+func DecodeCursor[T any](ctx context.Context, cur *mongo.Cursor) ([]T, error) {
+	results := []T{}
+	for cur.Next(ctx) {
+		var elem T
 		err := cur.Decode(&elem)
 		if err != nil {
 			return nil, err
 		}
-
 		results = append(results, elem)
-
 	}
 	return results, nil
 }
-
-// func GetShip(ctx context.Context, frn frn.String) (entities.ShipEntity, error) {
-// 	col := getCollection("ships")
-// 	var ship entities.ShipEntity
-// 	if err := col.FindOne(ctx, bson.M{"frn": frn}).Decode(&ship); err != nil {
-// 		return entities.ShipEntity{}, err
-// 	}
-// 	return ship, nil
-// }
