@@ -1,0 +1,8 @@
+mongodb:
+  uri: mongodb://mongo:password@localhost:27017/
+  database: fleet
+
+server:
+  host: localhost
+  port: 8080
+  base_path: /api/v1

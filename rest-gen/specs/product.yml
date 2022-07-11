@@ -1,0 +1,19 @@
+package: com.fleet.products
+imports:
+  - com.fleet.common
+types:
+  objects:
+    Product:
+      docs: |
+        Products are the individual assets to be deployed to the deployment (ship)
+      builder: true
+      fields:
+        frn: common.ProductFrn
+        name: string
+        namespace: string
+        createdAt: datetime
+        modifiedAt: datetime
+    CreateProductRequest:
+      fields:
+        name: string
+        namespace: optional<string>

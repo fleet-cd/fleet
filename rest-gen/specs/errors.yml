@@ -1,0 +1,9 @@
+package: com.fleet.errors
+errors:
+  ShipNotFound:
+    code: NOT_FOUND
+    statusCode: 404
+    docs: Fleet ship not found
+    safe-args:
+      frn: string
+    

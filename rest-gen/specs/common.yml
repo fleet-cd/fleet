@@ -1,0 +1,8 @@
+package: com.fleet.common
+types:
+  objects:
+    ProductFrn:
+      alias: string
+    ShipFrn:
+      alias: string
+    

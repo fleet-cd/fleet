@@ -1,0 +1,3 @@
+definitions:
+  input-dir: ./rest-gen/specs
+  output-dir: ./rest-gen/generated

@@ -1,0 +1,39 @@
+package: com.fleet.ships
+imports:
+  - com.fleet.common
+types:
+  objects:
+    Ship:
+      builder: true
+      fields:
+        frn: common.ShipFrn
+        name: string
+        namespace: string
+        createdAt: datetime
+        modifiedAt: datetime
+    CreateShipRequest:
+      fields:
+        name: string
+        namespace: optional<string>
+
+services:
+  ShipService:
+    base-path: /api/v1/ships
+    endpoints:
+      listShips:
+        http: GET /
+        docs: list all ships
+        returns: list<Ship>
+      getShip:
+        http: GET /{shipFrn}
+        docs: get single ship
+        args:
+          path:
+            shipFrn: string
+        returns: Ship
+      createShip:
+        http: POST /
+        docs: creates a new ship
+        args:
+          body: CreateShipRequest
+        returns: Ship

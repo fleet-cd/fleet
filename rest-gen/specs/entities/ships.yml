@@ -1,0 +1,13 @@
+package: com.fleet.entities
+imports:
+  - com.fleet.common
+types:
+  objects:
+    ShipEntity:
+      builder: true
+      fields:
+        frn: common.ShipFrn
+        name: string
+        namespace: string
+        createdAt: datetime
+        modifiedAt: datetime
