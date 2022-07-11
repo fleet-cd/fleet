@@ -1,0 +1,13 @@
+package: com.fleet.cargo
+imports:
+  - com.fleet.common
+types:
+  objects:
+    Cargo:
+      docs: |
+        Cargo are actual installed products
+      builder: true
+      fields:
+        frn: common.CargoFrn
+        productFrn: common.ProductFrn
+        shipFrm: common.ShipFrn
