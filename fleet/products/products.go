@@ -64,7 +64,7 @@ func (ss *ProductService) GetProduct(frn string) (products.Product, error) {
 
 	res, err := GetProduct(context.Background(), frn)
 	if err != nil {
-		return products.Product{}, errors.NewShipNotFound(err, frn)
+		return products.Product{}, errors.NewProductNotFound(err, frn)
 	}
 
 	result := products.NewProductBuilder().

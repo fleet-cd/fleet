@@ -19,3 +19,11 @@ types:
         namespace: string
         createdAt: datetime
         modifiedAt: datetime
+    CargoEntity:
+      builder: true
+      fields:
+        frn: common.CargoFrn
+        shipFrn: common.ShipFrn
+        productFrn: common.ProductFrn
+        createdAt: datetime
+        modifiedAt: datetime
