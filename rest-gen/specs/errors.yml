@@ -6,4 +6,16 @@ errors:
     docs: Fleet ship not found
     safe-args:
       frn: string
+  ProductNotFound:
+    code: NOT_FOUND
+    statusCode: 404
+    docs: Fleet product not found
+    safe-args:
+      frn: string
+  CargoNotFound:
+    code: NOT_FOUND
+    statusCode: 404
+    docs: Fleet cargo not found
+    safe-args:
+      frn: string
     

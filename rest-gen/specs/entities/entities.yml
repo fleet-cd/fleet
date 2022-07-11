@@ -5,6 +5,7 @@ types:
   objects:
     ShipEntity:
       builder: true
+      bson: true
       fields:
         frn: common.ShipFrn
         name: string
@@ -13,9 +14,19 @@ types:
         modifiedAt: datetime
     ProductEntity:
       builder: true
+      bson: true
       fields:
         frn: common.ProductFrn
         name: string
         namespace: string
+        createdAt: datetime
+        modifiedAt: datetime
+    CargoEntity:
+      builder: true
+      bson: true
+      fields:
+        frn: common.CargoFrn
+        shipFrn: common.ShipFrn
+        productFrn: common.ProductFrn
         createdAt: datetime
         modifiedAt: datetime

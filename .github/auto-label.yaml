@@ -5,4 +5,5 @@ requestsize:
 path:
   pullrequest: true
   paths:
-    rest-gen: 'rest-gen'
+    rest-gen: 
+      .: 'rest-gen'

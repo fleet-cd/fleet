@@ -1,6 +1,7 @@
 package: com.fleet.ships
 imports:
   - com.fleet.common
+  - com.fleet.cargo
 types:
   objects:
     Ship:
@@ -37,3 +38,10 @@ services:
         args:
           body: CreateShipRequest
         returns: Ship
+      getCargo:
+        http: GET /{shipFrn}/cargo
+        docs: get all installations
+        args:
+          path:
+            shipFrn: string
+        returns: list<cargo.Cargo>

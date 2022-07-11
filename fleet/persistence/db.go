@@ -22,6 +22,7 @@ func Connect(config config.Config) {
 	db = client.Database(config.MongoDB.Database)
 	createCollection("ships")
 	createCollection("products")
+	createCollection("cargo")
 }
 
 func createIndex(name string, opts *options.IndexOptions) mongo.IndexModel {

@@ -8,8 +8,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 	"github.com/tgs266/fleet/config"
+	cargoService "github.com/tgs266/fleet/fleet/cargo"
 	productService "github.com/tgs266/fleet/fleet/products"
 	shipService "github.com/tgs266/fleet/fleet/ships"
+	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/cargo"
 	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/products"
 	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/ships"
 )
@@ -35,11 +37,15 @@ func New(logger zerolog.Logger, config config.Config) *Server {
 
 	shipSvc := shipService.ShipService{}
 	productSvc := productService.ProductService{}
+	cargoSvc := cargoService.CargoService{}
 	ships.RegisterShipServiceRoutes(router, ships.ShipServiceHandler{
 		Handler: &shipSvc,
 	})
 	products.RegisterProductServiceRoutes(router, products.ProductServiceHandler{
 		Handler: &productSvc,
+	})
+	cargo.RegisterCargoServiceRoutes(router, cargo.CargoServiceHandler{
+		Handler: &cargoSvc,
 	})
 
 	return server
