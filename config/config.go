@@ -23,7 +23,7 @@ type Server struct {
 	BasePath string `yaml:"base_path"`
 }
 
-func Read(path string) Config {
+func Read(path string) *Config {
 	log.Debug().Msg("reading fleet config")
 	file, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -34,5 +34,5 @@ func Read(path string) Config {
 	if err != nil {
 		log.Err(err)
 	}
-	return config
+	return &config
 }

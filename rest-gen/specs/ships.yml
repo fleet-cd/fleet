@@ -16,6 +16,12 @@ types:
       fields:
         name: string
         namespace: optional<string>
+    ListShipsResponse:
+      builder: true
+      fields:
+        count: int
+        total: int
+        items: list<Ship>
 
 services:
   ShipService:
@@ -24,7 +30,11 @@ services:
       listShips:
         http: GET /
         docs: list all ships
-        returns: list<Ship>
+        args:
+          query: 
+            offset: optional<long>
+            pageSize: optional<long>
+        returns: ListShipsResponse
       getShip:
         http: GET /{shipFrn}
         docs: get single ship

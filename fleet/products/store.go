@@ -9,6 +9,10 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+func Count(ctx context.Context) (int64, error) {
+	return persistence.Count(ctx, "products")
+}
+
 func CreateProduct(ctx context.Context, product entities.ProductEntity) error {
 	return persistence.InsertOneToCollection(ctx, "products", product)
 }
@@ -17,17 +21,15 @@ func GetProduct(ctx context.Context, frn string) (entities.ProductEntity, error)
 	return persistence.FindOneByFrn[entities.ProductEntity](ctx, "products", frn)
 }
 
-func ListProducts(ctx context.Context) ([]entities.ProductEntity, error) {
-	col := persistence.GetCollection("products")
-	cur, err := col.Find(ctx, bson.M{}, &options.FindOptions{})
-	if err != nil {
-		return nil, err
-	}
-	return persistence.DecodeCursor[entities.ProductEntity](ctx, cur)
+func ListProducts(ctx context.Context, offset *int64, pageSize *int64) ([]entities.ProductEntity, error) {
+	return persistence.List[entities.ProductEntity](ctx, "products", options.Find().SetSkip(*offset).SetLimit(*pageSize))
 }
 
 func GetCargo(ctx context.Context, frn string) ([]entities.CargoEntity, error) {
-	col := persistence.GetCollection("cargo")
+	col, err := persistence.GetCollection("cargo")
+	if err != nil {
+		return nil, err
+	}
 	cur, err := col.Find(ctx, bson.M{"productFrn": frn}, &options.FindOptions{})
 	if err != nil {
 		return nil, err

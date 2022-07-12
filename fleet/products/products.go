@@ -39,26 +39,31 @@ func (ss *ProductService) CreateProduct(body products.CreateProductRequest) (pro
 	return product.Build(), nil
 }
 
-func (ss *ProductService) ListProducts() ([]products.Product, error) {
-
-	res, err := ListProducts(context.Background())
+func (ss *ProductService) ListProducts(offset *int64, pageSize *int64) (products.ListProductResponse, error) {
+	total, err := Count(context.TODO())
 	if err != nil {
-		return nil, err
+		return products.ListProductResponse{}, err
+	}
+	res, err := ListProducts(context.TODO(), offset, pageSize)
+	if err != nil {
+		return products.ListProductResponse{}, err
 	}
 
-	results := []products.Product{}
-	for _, r := range res {
-		results = append(results, products.NewProductBuilder().
-			SetFrn(r.Frn).
-			SetName(r.Name).
-			SetNamespace(r.Namespace).
-			SetCreatedAt(r.CreatedAt).
-			SetModifiedAt(r.ModifiedAt).
-			Build(),
-		)
-	}
+	results := utils.ConvertList[entities.ProductEntity, products.Product](res, func(input entities.ProductEntity) products.Product {
+		return products.NewProductBuilder().
+			SetFrn(input.Frn).
+			SetName(input.Name).
+			SetNamespace(input.Namespace).
+			SetCreatedAt(input.CreatedAt).
+			SetModifiedAt(input.ModifiedAt).
+			Build()
+	})
 
-	return results, nil
+	return products.NewListProductResponseBuilder().
+		SetCount(len(results)).
+		SetTotal(int(total)).
+		SetItems(results).
+		Build(), nil
 }
 
 func (ss *ProductService) GetProduct(frn string) (products.Product, error) {

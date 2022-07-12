@@ -18,6 +18,12 @@ types:
       fields:
         productFrn: common.ProductFrn
         shipFrn: common.ShipFrn
+    ListCargoResponse:
+      builder: true
+      fields:
+        count: int
+        total: int
+        items: list<Cargo>
 
 services:
   CargoService:
@@ -29,3 +35,10 @@ services:
         args:
           body: CreateCargoRequest
         returns: Cargo
+      listCargo:
+        http: GET /
+        args:
+          query: 
+            offset: optional<long>
+            pageSize: optional<long>
+        returns: ListCargoResponse

@@ -39,26 +39,31 @@ func (ss *ShipService) CreateShip(body ships.CreateShipRequest) (ships.Ship, err
 	return ship.Build(), nil
 }
 
-func (ss *ShipService) ListShips() ([]ships.Ship, error) {
-
-	res, err := ListShips(context.Background())
+func (ss *ShipService) ListShips(offset *int64, pageSize *int64) (ships.ListShipsResponse, error) {
+	total, err := Count(context.TODO())
 	if err != nil {
-		return nil, err
+		return ships.ListShipsResponse{}, err
+	}
+	res, err := ListShips(context.TODO(), offset, pageSize)
+	if err != nil {
+		return ships.ListShipsResponse{}, err
 	}
 
-	resultShips := []ships.Ship{}
-	for _, r := range res {
-		resultShips = append(resultShips, ships.NewShipBuilder().
-			SetFrn(r.Frn).
-			SetName(r.Name).
-			SetNamespace(r.Namespace).
-			SetCreatedAt(r.CreatedAt).
-			SetModifiedAt(r.ModifiedAt).
-			Build(),
-		)
-	}
+	results := utils.ConvertList(res, func(input entities.ShipEntity) ships.Ship {
+		return ships.NewShipBuilder().
+			SetFrn(input.Frn).
+			SetName(input.Name).
+			SetNamespace(input.Namespace).
+			SetCreatedAt(input.CreatedAt).
+			SetModifiedAt(input.ModifiedAt).
+			Build()
+	})
 
-	return resultShips, nil
+	return ships.NewListShipsResponseBuilder().
+		SetTotal(int(total)).
+		SetCount(len(results)).
+		SetItems(results).
+		Build(), nil
 }
 
 func (ss *ShipService) GetShip(shipFrn string) (ships.Ship, error) {

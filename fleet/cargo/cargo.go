@@ -45,3 +45,32 @@ func (service *CargoService) CreateCargo(body cargo.CreateCargoRequest) (cargo.C
 		SetModifiedAt(entity.ModifiedAt)
 	return cargo.Build(), nil
 }
+
+func (service *CargoService) ListCargo(offset *int64, pageSize *int64) (cargo.ListCargoResponse, error) {
+	total, err := CountCargo(context.TODO())
+	if err != nil {
+		return cargo.ListCargoResponse{}, err
+	}
+
+	items, err := ListCargo(context.TODO(), offset, pageSize)
+	if err != nil {
+		return cargo.ListCargoResponse{}, err
+	}
+	results := []cargo.Cargo{}
+	for _, r := range items {
+		results = append(results, cargo.NewCargoBuilder().
+			SetFrn(r.Frn).
+			SetShipFrn(r.ShipFrn).
+			SetProductFrn(r.ProductFrn).
+			SetCreatedAt(r.CreatedAt).
+			SetModifiedAt(r.ModifiedAt).
+			Build(),
+		)
+	}
+
+	return cargo.ListCargoResponse{
+		Total: int(total),
+		Count: len(results),
+		Items: results,
+	}, nil
+}

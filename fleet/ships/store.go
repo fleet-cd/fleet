@@ -9,26 +9,27 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+func Count(ctx context.Context) (int64, error) {
+	return persistence.Count(ctx, "ships")
+}
+
 func CreateShip(ctx context.Context, ship entities.ShipEntity) error {
 	return persistence.InsertOneToCollection(ctx, "ships", ship)
 }
 
 func GetShip(ctx context.Context, frn string) (entities.ShipEntity, error) {
 	return persistence.FindOneByFrn[entities.ShipEntity](ctx, "ships", frn)
-
 }
 
-func ListShips(ctx context.Context) ([]entities.ShipEntity, error) {
-	col := persistence.GetCollection("ships")
-	cur, err := col.Find(ctx, bson.M{}, &options.FindOptions{})
-	if err != nil {
-		return nil, err
-	}
-	return persistence.DecodeCursor[entities.ShipEntity](ctx, cur)
+func ListShips(ctx context.Context, offset *int64, pageSize *int64) ([]entities.ShipEntity, error) {
+	return persistence.List[entities.ShipEntity](ctx, "ships", options.Find().SetSkip(*offset).SetLimit(*pageSize))
 }
 
 func GetCargo(ctx context.Context, frn string) ([]entities.CargoEntity, error) {
-	col := persistence.GetCollection("cargo")
+	col, err := persistence.GetCollection("cargo")
+	if err != nil {
+		return nil, err
+	}
 	cur, err := col.Find(ctx, bson.M{"shipFrn": frn}, &options.FindOptions{})
 	if err != nil {
 		return nil, err

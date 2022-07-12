@@ -2,27 +2,38 @@ package persistence
 
 import (
 	"context"
+	"time"
 
 	"github.com/rs/zerolog/log"
 	"github.com/tgs266/fleet/config"
+	"github.com/tgs266/fleet/fleet/utils"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 var db *mongo.Database
+var cfg config.Config
 
-func Connect(config config.Config) {
+func Connect(config *config.Config) error {
+	if db != nil {
+		return nil
+	}
 	log.Info().Msg("connecting to mongodb")
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(config.MongoDB.URI))
+	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*2)
+	defer cancel()
+	cfg = utils.OrDefault(config, cfg)
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(config.MongoDB.URI).SetConnectTimeout(1*time.Second))
 	if err != nil {
-		panic(err)
+		log.Logger.Err(err).Msg("could not connect to database")
+		return err
 	}
 
 	db = client.Database(config.MongoDB.Database)
 	createCollection("ships")
 	createCollection("products")
 	createCollection("cargo")
+	return nil
 }
 
 func createIndex(name string, opts *options.IndexOptions) mongo.IndexModel {
@@ -41,27 +52,81 @@ func createCollection(collection string) {
 	frnIndex := createIndex("frn", &options.IndexOptions{Unique: t})
 
 	col := db.Collection(collection)
-	col.Indexes().CreateOne(context.TODO(), createdAtIndex, options.CreateIndexes())
-	col.Indexes().CreateOne(context.TODO(), modifiedAtIndex, options.CreateIndexes())
-	col.Indexes().CreateOne(context.TODO(), frnIndex, options.CreateIndexes())
+	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*2)
+	defer cancel()
+	col.Indexes().CreateOne(ctx, createdAtIndex, options.CreateIndexes())
+
+	ctx, cancel = context.WithTimeout(context.TODO(), time.Second*2)
+	defer cancel()
+	col.Indexes().CreateOne(ctx, modifiedAtIndex, options.CreateIndexes())
+
+	ctx, cancel = context.WithTimeout(context.TODO(), time.Second*2)
+	defer cancel()
+	col.Indexes().CreateOne(ctx, frnIndex, options.CreateIndexes())
 }
 
-func GetCollection(collection string) *mongo.Collection {
+func Ping() bool {
+	if db == nil {
+		err := Connect(nil)
+		if err != nil {
+			return false
+		}
+	}
+	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*2)
+	defer cancel()
+	err := db.Client().Ping(ctx, nil)
+	if err != nil {
+		return false
+	}
+	return true
+}
+
+func GetCollection(collection string) (*mongo.Collection, error) {
+	err := Connect(nil)
+	if err != nil {
+		return nil, err
+	}
 	col := db.Collection(collection)
 	col.Indexes().CreateOne(context.TODO(), mongo.IndexModel{})
-	return col
+	return col, nil
 }
 
 func FindOneByFrn[T any](ctx context.Context, collection string, frn string) (T, error) {
-	col := GetCollection(collection)
 	var val T
-	err := col.FindOne(ctx, bson.M{"frn": frn}, &options.FindOneOptions{}).Decode(&val)
+	col, err := GetCollection(collection)
+	if err != nil {
+		return val, err
+	}
+	err = col.FindOne(ctx, bson.M{"frn": frn}, &options.FindOneOptions{}).Decode(&val)
 	return val, err
 }
 
+func Count(ctx context.Context, collection string) (int64, error) {
+	col, err := GetCollection(collection)
+	if err != nil {
+		return -1, err
+	}
+	return col.CountDocuments(ctx, bson.M{}, &options.CountOptions{})
+}
+
+func List[T any](ctx context.Context, collection string, opts *options.FindOptions) ([]T, error) {
+	col, err := GetCollection(collection)
+	if err != nil {
+		return nil, err
+	}
+	cur, err := col.Find(ctx, bson.M{}, opts)
+	if err != nil {
+		return nil, err
+	}
+	return DecodeCursor[T](ctx, cur)
+}
+
 func InsertOneToCollection(ctx context.Context, collection string, object any) error {
-	col := GetCollection(collection)
-	_, err := col.InsertOne(ctx, object)
+	col, err := GetCollection(collection)
+	if err != nil {
+		return err
+	}
+	_, err = col.InsertOne(ctx, object)
 	return err
 }
 

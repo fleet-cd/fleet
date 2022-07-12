@@ -1,0 +1,16 @@
+package: com.fleet.health
+types:
+  objects:
+    Health:
+      builder: true
+      fields:
+        status: string
+        reason: string
+
+services:
+  HealthService:
+    base-path: /api/v1/health
+    endpoints:
+      health:
+        http: GET /
+        returns: Health

@@ -18,6 +18,12 @@ types:
       fields:
         name: string
         namespace: optional<string>
+    ListProductResponse:
+      builder: true
+      fields:
+        count: int
+        total: int
+        items: list<Product>
 
 services:
   ProductService:
@@ -26,7 +32,11 @@ services:
       listProducts:
         http: GET /
         docs: list all products
-        returns: list<Product>
+        args:
+          query: 
+            offset: optional<long>
+            pageSize: optional<long>
+        returns: ListProductResponse
       createProduct:
         http: POST /
         docs: creates a new product
