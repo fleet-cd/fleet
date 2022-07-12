@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/fleet-cd/fleet/compare/v0.2.0...v0.3.0) (2022-07-12)
+
+
+### Features
+
+* upgrade apis ([df2d064](https://github.com/fleet-cd/fleet/commit/df2d0644667b2836918b356beb57c851e4f15105))
+
 ## [0.2.0](https://github.com/fleet-cd/fleet/compare/v0.1.0...v0.2.0) (2022-07-11)
 
 
