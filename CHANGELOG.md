@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/fleet-cd/fleet/compare/v0.3.0...v0.4.0) (2022-07-17)
+
+
+### Features
+
+* impl basic auth ([#9](https://github.com/fleet-cd/fleet/issues/9)) ([f172f24](https://github.com/fleet-cd/fleet/commit/f172f24b403299e62ae1b6b79a6bae80105e5c3d))
+
 ## [0.3.0](https://github.com/fleet-cd/fleet/compare/v0.2.0...v0.3.0) (2022-07-12)
 
 
