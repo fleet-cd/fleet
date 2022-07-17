@@ -10,6 +10,14 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+func GetPermissions(perms []common.PermissionFrn) ([]common.Permission, error) {
+	return persistence.ListQuery[common.Permission](context.TODO(), "permissions", bson.M{"frn": bson.M{"$in": perms}}, &options.FindOptions{})
+}
+
+func GetGroups(groups []string) ([]entities.GroupEntity, error) {
+	return persistence.ListQuery[entities.GroupEntity](context.TODO(), "groups", bson.M{"name": bson.M{"$in": groups}}, &options.FindOptions{})
+}
+
 func GetUserByFrn(userFrn common.UserFrn) (entities.UserEntity, error) {
 	return persistence.FindOneByFrn[entities.UserEntity](context.TODO(), "users", string(userFrn))
 }

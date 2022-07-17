@@ -26,6 +26,36 @@ types:
         actions: list<string>
         createdAt: datetime
         modifiedAt: datetime
+    Namespace:
+      bson: true
+      fields:
+        name: string
+        createdAt: datetime
+        modifiedAt: datetime
     Password:
       alias: list<byte>
+
+    CreateNamespaceRequest:
+      fields:
+        namespace: string
     
+
+services:
+  NamespaceService:
+    auth: "cookie:F_TOKEN"
+    base-path: /api/v1/namespaces
+    context: true
+    endpoints:
+      listNamespaces:
+        http: GET /
+        docs: list namespaces
+        args:
+          query: 
+            sort: string
+        returns: list<Namespace>
+      createNamespace:
+        http: POST /
+        docs: create namespace
+        args:
+          body: CreateNamespaceRequest
+        returns: Namespace

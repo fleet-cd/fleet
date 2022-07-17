@@ -10,8 +10,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func Count(ctx context.Context) (int64, error) {
-	return persistence.Count(ctx, "ships")
+func Count(ctx context.Context, query bson.M) (int64, error) {
+	return persistence.CountQuery(ctx, "ships", query)
 }
 
 func CreateShip(ctx context.Context, ship entities.ShipEntity) error {
@@ -26,8 +26,8 @@ func DeleteShip(ctx context.Context, frn common.ShipFrn) error {
 	return persistence.DeleteOneByFrn[entities.ShipEntity](ctx, "ships", string(frn))
 }
 
-func ListShips(ctx context.Context, offset int64, pageSize int64, sort bson.D) ([]entities.ShipEntity, error) {
-	return persistence.List[entities.ShipEntity](ctx, "ships", options.Find().SetSkip(offset).SetLimit(pageSize).SetSort(sort))
+func ListShips(ctx context.Context, request bson.M, offset int64, pageSize int64, sort bson.D) ([]entities.ShipEntity, error) {
+	return persistence.ListQuery[entities.ShipEntity](ctx, "ships", request, options.Find().SetSkip(offset).SetLimit(pageSize).SetSort(sort))
 }
 
 func GetCargo(ctx context.Context, frn common.ShipFrn) ([]entities.CargoEntity, error) {

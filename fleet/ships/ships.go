@@ -47,16 +47,17 @@ func (ss *ShipService) CreateShip(body ships.CreateShipRequest, token authentica
 }
 
 func (ss *ShipService) ListShips(offset *int64, pageSize *int64, sort string, token authentication.Token) (ships.ListShipsResponse, error) {
-	panicker.AndPanic(auth.CanI(token, "ship", "*", auth.ACTION_VIEW)).GetOrPanicFunc(func(err error) error {
+
+	request := panicker.AndPanic(auth.WhatCanIList(token, "ship")).GetOrPanicFunc(func(err error) error {
 		panic(err)
 	})
-	total, err := Count(context.TODO())
+	total, err := Count(context.TODO(), request)
 	if err != nil {
 		return ships.ListShipsResponse{}, err
 	}
 	sortMap := utils.GetSortMap(sort)
 
-	res, err := ListShips(context.Background(), utils.OrDefault(offset, 0), utils.OrDefault(pageSize, 0), sortMap)
+	res, err := ListShips(context.Background(), request, utils.OrDefault(offset, 0), utils.OrDefault(pageSize, 0), sortMap)
 	if err != nil {
 		return ships.ListShipsResponse{}, err
 	}

@@ -7,6 +7,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/tgs266/fleet/config"
 	"github.com/tgs266/fleet/fleet/utils"
+	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/common"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -36,7 +37,22 @@ func Connect(config *config.Config) error {
 	createCollection("ships", true)
 	createCollection("products", true)
 	createCollection("cargo", true)
+	createCollection("namespaces", false, "name")
+
+	createDefaultNs(db)
 	return nil
+}
+
+func createDefaultNs(db *mongo.Database) {
+	col := db.Collection("namespaces")
+	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*2)
+	defer cancel()
+	now := time.Now()
+	col.InsertOne(ctx, common.Namespace{
+		Name:       "default",
+		CreatedAt:  now,
+		ModifiedAt: now,
+	}, options.InsertOne())
 }
 
 func createIndex(name string, opts *options.IndexOptions) mongo.IndexModel {
@@ -139,6 +155,13 @@ func Count(ctx context.Context, collection string) (int64, error) {
 	}
 	return col.CountDocuments(ctx, bson.M{}, &options.CountOptions{})
 }
+func CountQuery(ctx context.Context, collection string, query bson.M) (int64, error) {
+	col, err := GetCollection(collection)
+	if err != nil {
+		return -1, err
+	}
+	return col.CountDocuments(ctx, query, &options.CountOptions{})
+}
 
 func List[T any](ctx context.Context, collection string, opts *options.FindOptions) ([]T, error) {
 	col, err := GetCollection(collection)
@@ -146,6 +169,18 @@ func List[T any](ctx context.Context, collection string, opts *options.FindOptio
 		return nil, err
 	}
 	cur, err := col.Find(ctx, bson.M{}, opts)
+	if err != nil {
+		return nil, err
+	}
+	return DecodeCursor[T](ctx, cur)
+}
+
+func ListQuery[T any](ctx context.Context, collection string, query bson.M, opts *options.FindOptions) ([]T, error) {
+	col, err := GetCollection(collection)
+	if err != nil {
+		return nil, err
+	}
+	cur, err := col.Find(ctx, query, opts)
 	if err != nil {
 		return nil, err
 	}

@@ -120,6 +120,10 @@ github.com/tgs266/rest-gen v0.13.3 h1:lojNyKldW+an73mA4mfY1FSMmC3CJYQLpam74K5H9w
 github.com/tgs266/rest-gen v0.13.3/go.mod h1:sBXMmLpBRLa+FsxIVMx5ZxJhPnywYBfYOFAbjLcShOE=
 github.com/tgs266/rest-gen v0.13.4 h1:KqqHKOBuG6MNoC/fjyPApbw4ERT8183Gm48IPi9qnfg=
 github.com/tgs266/rest-gen v0.13.4/go.mod h1:sBXMmLpBRLa+FsxIVMx5ZxJhPnywYBfYOFAbjLcShOE=
+github.com/tgs266/rest-gen v0.14.0 h1:8I8BjXyaoehjBUcpPOcudj4EEtc8A+Uzafz8g8JwbSk=
+github.com/tgs266/rest-gen v0.14.0/go.mod h1:sBXMmLpBRLa+FsxIVMx5ZxJhPnywYBfYOFAbjLcShOE=
+github.com/tgs266/rest-gen v0.15.0 h1:j3WbIUfNPjkkgJP7QK10pSbCdmrRzlSrzGVNcxZKV7g=
+github.com/tgs266/rest-gen v0.15.0/go.mod h1:sBXMmLpBRLa+FsxIVMx5ZxJhPnywYBfYOFAbjLcShOE=
 github.com/tidwall/pretty v1.0.0/go.mod h1:XNkn88O1ChpSDQmQeStsy+sBenx6DDtFZJxhVysOjyk=
 github.com/ugorji/go v1.2.7/go.mod h1:nF9osbDWLy6bDVv/Rtoh6QgnvNDpmCalQV5urGCCS6M=
 github.com/ugorji/go/codec v1.2.7 h1:YPXUKf7fYbp/y8xloBqZOw2qaVggbfwMlI8WM3wZUJ0=

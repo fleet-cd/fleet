@@ -12,12 +12,14 @@ import (
 	authService "github.com/tgs266/fleet/fleet/auth"
 	cargoService "github.com/tgs266/fleet/fleet/cargo"
 	healthService "github.com/tgs266/fleet/fleet/health"
+	namespaceService "github.com/tgs266/fleet/fleet/namespace"
 	productService "github.com/tgs266/fleet/fleet/products"
 	securedAuthService "github.com/tgs266/fleet/fleet/secured_auth"
 	shipService "github.com/tgs266/fleet/fleet/ships"
 	userService "github.com/tgs266/fleet/fleet/users"
 	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/auth"
 	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/cargo"
+	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/common"
 	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/health"
 	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/products"
 	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/ships"
@@ -59,6 +61,7 @@ func New(logger zerolog.Logger, config *config.Config) *Server {
 	authSvc := authService.AuthService{}
 	securedAuthSvc := securedAuthService.SecuredAuthService{}
 	userSvc := userService.UserService{}
+	namespaceSvc := namespaceService.NamespaceService{}
 	ships.RegisterShipServiceRoutes(router, ships.ShipServiceHandler{
 		Handler: &shipSvc,
 	})
@@ -79,6 +82,9 @@ func New(logger zerolog.Logger, config *config.Config) *Server {
 	})
 	users.RegisterUserServiceRoutes(router, users.UserServiceHandler{
 		Handler: &userSvc,
+	})
+	common.RegisterNamespaceServiceRoutes(router, common.NamespaceServiceHandler{
+		Handler: &namespaceSvc,
 	})
 
 	return server
