@@ -16,19 +16,17 @@ func CreateAdminUser(email string, password string) {
 		panic(err)
 	}
 	now := time.Now()
-	permission := common.NewPermissionBuilder().
+	permission := entities.NewPermissionEntityBuilder().
 		SetActions([]string{"*"}).
-		SetFrn(common.PermissionFrn(frn.Generate("permission", "default").String())).
 		SetCreatedAt(now).
 		SetModifiedAt(now).
-		SetName("admin access").
 		SetNamespace("*").
 		SetResourceType("*").
 		Build()
 	group := entities.NewGroupEntityBuilder().
 		SetName("admins").
 		SetCreatedAt(now).
-		SetPermissions([]common.PermissionFrn{permission.Frn}).
+		SetPermissions([]entities.PermissionEntity{permission}).
 		SetModifiedAt(now).Build()
 	user := entities.NewUserEntityBuilder().
 		SetFrn(common.UserFrn(frn.Generate("user", "default").String())).
@@ -37,7 +35,6 @@ func CreateAdminUser(email string, password string) {
 		SetGroups([]string{group.Name}).
 		SetCreatedAt(now).
 		SetModifiedAt(now).Build()
-	persistence.InsertOneToCollection(context.TODO(), "permissions", permission)
 	persistence.InsertOneToCollection(context.TODO(), "groups", group)
 	persistence.InsertOneToCollection(context.TODO(), "users", user)
 }

@@ -13,19 +13,6 @@ types:
       alias: Frn
     GroupFrn:
       alias: Frn
-    PermissionFrn:
-      alias: Frn
-    Permission:
-      bson: true
-      builder: true
-      fields:
-        frn: PermissionFrn
-        name: string
-        namespace: string
-        resourceType: string 
-        actions: list<string>
-        createdAt: datetime
-        modifiedAt: datetime
     Namespace:
       bson: true
       fields:

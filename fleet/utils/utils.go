@@ -20,6 +20,10 @@ func Contains[T comparable](arr []T, value T) bool {
 	return false
 }
 
+func RemoveByIdx[T any](arr []T, idx int) []T {
+	return append(arr[:idx], arr[idx+1:]...)
+}
+
 func FindAndRemove[T comparable](arr []T, value T) []T {
 	out := []T{}
 	for _, v := range arr {

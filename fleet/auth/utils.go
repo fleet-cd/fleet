@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/tgs266/fleet/fleet/utils"
-	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/common"
 	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/entities"
 	"github.com/tgs266/rest-gen/runtime/authentication"
 	"github.com/tgs266/rest-gen/runtime/errors"
@@ -32,17 +31,15 @@ func IsAuth(authToken authentication.Token) (entities.UserEntity, error) {
 	return user, nil
 }
 
-func GetAllUserParams(user entities.UserEntity) ([]common.Permission, error) {
+func GetAllUserParams(user entities.UserEntity) ([]entities.PermissionEntity, error) {
 	groups, err := GetGroups(user.Groups)
 	if err != nil {
 		return nil, err
 	}
-	groupString := []common.PermissionFrn{}
+	perms := []entities.PermissionEntity{}
 	for _, g := range groups {
-		groupString = append(groupString, g.Permissions...)
+		perms = append(perms, g.Permissions...)
 	}
-
-	perms, err := GetPermissions(groupString)
 	return perms, err
 }
 

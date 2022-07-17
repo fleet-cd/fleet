@@ -17,17 +17,12 @@ types:
     CreateGroupRequest:
       fields:
         name: string
-        permissions: list<common.PermissionFrn>
+        permissions: list<CreatePermissionRequest>
     CreatePermissionRequest:
       fields:
-        name: string
         namespace: string
         resourceType: string 
         actions: list<string>
-    GetGroupResponse:
-      fields:
-        group: entities.GroupEntity
-        expandedPermissions: list<common.Permission>
 
 services:
   AuthService:
@@ -61,24 +56,17 @@ services:
         args:
           path:
             name: string
-          query:
-            expandPermissions: boolean
-        returns: GetGroupResponse
+        returns: entities.GroupEntity
       deleteGroupPermission:
-        http: DELETE /groups/{name}/{permissionFrn}
+        http: DELETE /groups/{name}/permissions/{permissionIdx}
         args:
           path:
             name: string
-            permissionFrn: string
-      listPermissions:
-        http: GET /permissions
+            permissionIdx: int
+      addGroupPermission:
+        http: PUT /groups/{groupName}/permissions/
         args:
-          query:
-            sort: string
-        returns: list<common.Permission>
-      createPermission:
-        http: POST /permissions
-        args:
+          path:
+            groupName: string
           body: CreatePermissionRequest
-        returns: common.Permission
-  
+      

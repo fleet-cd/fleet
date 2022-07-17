@@ -1,16 +1,13 @@
 package securedauth
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	fleetAuth "github.com/tgs266/fleet/fleet/auth"
 	"github.com/tgs266/fleet/fleet/panicker"
 	"github.com/tgs266/fleet/fleet/utils"
-	"github.com/tgs266/fleet/frn"
 	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/auth"
-	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/common"
 	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/entities"
 	"github.com/tgs266/rest-gen/runtime/authentication"
 	"github.com/tgs266/rest-gen/runtime/errors"
@@ -34,9 +31,20 @@ func (service *SecuredAuthService) CreateGroup(ctx *gin.Context, body auth.Creat
 		panic(err)
 	})
 	now := time.Now()
+
+	permissions := utils.ConvertList(body.Permissions, func(input auth.CreatePermissionRequest) entities.PermissionEntity {
+		return entities.NewPermissionEntityBuilder().
+			SetActions(input.Actions).
+			SetNamespace(input.Namespace).
+			SetResourceType(input.ResourceType).
+			SetCreatedAt(now).
+			SetModifiedAt(now).
+			Build()
+	})
+
 	groupEntity := entities.NewGroupEntityBuilder().
 		SetName(body.Name).
-		SetPermissions(body.Permissions).
+		SetPermissions(permissions).
 		SetCreatedAt(now).
 		SetModifiedAt(now).Build()
 
@@ -44,58 +52,38 @@ func (service *SecuredAuthService) CreateGroup(ctx *gin.Context, body auth.Creat
 	return groupEntity, nil
 }
 
-func (service *SecuredAuthService) GetGroup(ctx *gin.Context, expandPermissions bool, name string, token authentication.Token) (auth.GetGroupResponse, error) {
+func (service *SecuredAuthService) GetGroup(ctx *gin.Context, name string, token authentication.Token) (entities.GroupEntity, error) {
 	panicker.AndPanic(fleetAuth.CanINoNamepsace(token, "group", fleetAuth.ACTION_VIEW)).GetOrPanicFunc(func(err error) error {
 		panic(err)
 	})
 	group := panicker.AndPanic(GetGroup(ctx, name)).GetOrPanicFunc(errors.NewNotFound)
-	perms := []common.Permission{}
-	if expandPermissions {
-		perms = panicker.AndPanic(BactchGetPermissions(ctx, group.Permissions)).GetOrPanicFunc(errors.NewNotFound)
-	}
-	return auth.GetGroupResponse{
-		Group:               group,
-		ExpandedPermissions: perms,
-	}, nil
+	return group, nil
 }
 
-func (service *SecuredAuthService) DeleteGroupPermission(ctx *gin.Context, name string, permissionName string, token authentication.Token) error {
+func (service *SecuredAuthService) DeleteGroupPermission(ctx *gin.Context, name string, permissionIdx int, token authentication.Token) error {
 	panicker.AndPanic(fleetAuth.CanINoNamepsace(token, "group", fleetAuth.ACTION_EDIT)).GetOrPanicFunc(func(err error) error {
 		panic(err)
 	})
 	group := panicker.AndPanic(GetGroup(ctx, name)).GetOrPanicFunc(errors.NewNotFound)
-	fmt.Println(group.Permissions)
-	fmt.Println(utils.FindAndRemove(group.Permissions, common.PermissionFrn(permissionName)))
-	group.Permissions = utils.FindAndRemove(group.Permissions, common.PermissionFrn(permissionName))
-	fmt.Println(group.Permissions)
+	group.Permissions = utils.RemoveByIdx(group.Permissions, permissionIdx)
 	panicker.CheckAndPanic(UpdateGroup(ctx, name, group))
 	return nil
 }
 
-func (service *SecuredAuthService) ListPermissions(ctx *gin.Context, sort string, token authentication.Token) ([]common.Permission, error) {
-	panicker.AndPanic(fleetAuth.CanI(token, "permission", "*", fleetAuth.ACTION_VIEW)).GetOrPanicFunc(func(err error) error {
-		panic(err)
-	})
-	perms, err := ListPermissions(ctx, utils.GetSortMap(sort))
-	if err != nil {
-		return nil, errors.NewNotFound(err)
-	}
-	return perms, nil
-}
-
-func (service *SecuredAuthService) CreatePermission(ctx *gin.Context, body auth.CreatePermissionRequest, token authentication.Token) (common.Permission, error) {
+func (service *SecuredAuthService) AddGroupPermission(ctx *gin.Context, body auth.CreatePermissionRequest, groupName string, token authentication.Token) error {
 	panicker.AndPanic(fleetAuth.CanI(token, "permission", "*", fleetAuth.ACTION_CREATE)).GetOrPanicFunc(func(err error) error {
 		panic(err)
 	})
 	now := time.Now()
-	entity := common.NewPermissionBuilder().
+	entity := entities.NewPermissionEntityBuilder().
 		SetActions(body.Actions).
 		SetCreatedAt(now).
 		SetModifiedAt(now).
-		SetFrn(frn.GenerateActual[common.PermissionFrn]("permission", "default")).
-		SetName(body.Name).
 		SetNamespace(body.Namespace).
 		SetResourceType(body.ResourceType).Build()
-	panicker.CheckAndPanic(CreatePermission(ctx, entity))
-	return entity, nil
+
+	group := panicker.AndPanic(GetGroup(ctx, groupName)).GetOrPanicFunc(errors.NewNotFound)
+	group.Permissions = append(group.Permissions, entity)
+	panicker.CheckAndPanic(UpdateGroup(ctx, groupName, group))
+	return nil
 }

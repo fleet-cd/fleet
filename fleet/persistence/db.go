@@ -31,7 +31,6 @@ func Connect(config *config.Config) error {
 	}
 
 	db = client.Database(config.MongoDB.Database)
-	createCollection("permissions", true, "name")
 	createCollection("groups", false, "name")
 	createCollection("users", true, "email")
 	createCollection("ships", true)

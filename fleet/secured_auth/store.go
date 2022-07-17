@@ -26,18 +26,6 @@ func UpdateGroup(ctx context.Context, name string, group entities.GroupEntity) e
 	return persistence.UpdateOne[entities.GroupEntity](ctx, "groups", bson.M{"name": name}, group)
 }
 
-func BactchGetPermissions(ctx context.Context, perms []common.PermissionFrn) ([]common.Permission, error) {
-	return persistence.ListQuery[common.Permission](ctx, "permissions", bson.M{"frn": bson.M{"$in": perms}}, &options.FindOptions{})
-}
-
-func ListPermissions(ctx context.Context, sort bson.D) ([]common.Permission, error) {
-	return persistence.List[common.Permission](ctx, "permissions", options.Find().SetSort(sort))
-}
-
-func CreatePermission(ctx context.Context, perm common.Permission) error {
-	return persistence.InsertOneToCollection(ctx, "permissions", perm)
-}
-
 func ListGroups(ctx context.Context, sort bson.D) ([]entities.GroupEntity, error) {
 	return persistence.List[entities.GroupEntity](ctx, "groups", options.Find().SetSort(sort))
 }

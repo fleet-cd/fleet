@@ -42,11 +42,20 @@ types:
         groups: list<string>
         createdAt: datetime
         modifiedAt: datetime
+    PermissionEntity:
+      bson: true
+      builder: true
+      fields:
+        namespace: string
+        resourceType: string 
+        actions: list<string>
+        createdAt: datetime
+        modifiedAt: datetime
     GroupEntity:
       builder: true
       bson: true
       fields:
         name: string
-        permissions: list<common.PermissionFrn>
+        permissions: list<PermissionEntity>
         createdAt: datetime
         modifiedAt: datetime
