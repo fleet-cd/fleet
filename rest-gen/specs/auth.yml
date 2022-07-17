@@ -1,0 +1,66 @@
+package: com.fleet.auth
+imports:
+  - com.fleet.common
+  - com.fleet.entities
+types:
+  objects:
+    LoginRequest:
+      fields:
+        email: string
+        password: string
+    LoginResponse:
+      fields:
+        token: string
+    CanIResponse:
+      fields:
+        result: boolean
+    CreateGroupRequest:
+      fields:
+        name: string
+        permissions: list<common.PermissionFrn>
+    CreatePermissionRequest:
+      fields:
+        name: string
+        namespace: string
+        resourceType: string 
+        actions: list<string>
+
+services:
+  AuthService:
+    base-path: /api/v1/auth
+    context: true
+    endpoints:
+      login:
+        http: POST /login
+        args:
+          body: LoginRequest
+        returns: LoginResponse
+      
+  SecuredAuthService:
+    base-path: /api/v1/auth
+    context: true
+    auth: "cookie:F_TOKEN"
+    endpoints:
+      listGroups:
+        http: GET /groups
+        args:
+          query:
+            sort: string
+        returns: list<entities.GroupEntity>
+      createGroup:
+        http: POST /groups
+        args:
+          body: CreateGroupRequest
+        returns: entities.GroupEntity
+      listPermissions:
+        http: GET /permissions
+        args:
+          query:
+            sort: string
+        returns: list<common.Permission>
+      createPermission:
+        http: POST /permissions
+        args:
+          body: CreatePermissionRequest
+        returns: common.Permission
+  

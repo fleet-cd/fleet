@@ -9,14 +9,20 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 	"github.com/tgs266/fleet/config"
+	authService "github.com/tgs266/fleet/fleet/auth"
 	cargoService "github.com/tgs266/fleet/fleet/cargo"
 	healthService "github.com/tgs266/fleet/fleet/health"
 	productService "github.com/tgs266/fleet/fleet/products"
+	securedAuthService "github.com/tgs266/fleet/fleet/secured_auth"
 	shipService "github.com/tgs266/fleet/fleet/ships"
+	userService "github.com/tgs266/fleet/fleet/users"
+	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/auth"
 	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/cargo"
 	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/health"
 	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/products"
 	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/ships"
+	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/users"
+	"github.com/tgs266/rest-gen/runtime/errors"
 )
 
 type Server struct {
@@ -37,7 +43,12 @@ func New(logger zerolog.Logger, config *config.Config) *Server {
 	}
 	corsCfg := cors.DefaultConfig()
 	corsCfg.AllowOrigins = []string{"http://localhost:3000"}
+	corsCfg.AllowCredentials = true
 	router.Use(cors.New(corsCfg))
+	router.Use(RecoveryMiddleware(func(ctx *gin.Context, err error) {
+		e := errors.GetError(err)
+		ctx.JSON(e.Code(), e)
+	}))
 	router.Use(Middleware(logger))
 	router.Use(ErrorMiddleware())
 
@@ -45,6 +56,9 @@ func New(logger zerolog.Logger, config *config.Config) *Server {
 	productSvc := productService.ProductService{}
 	cargoSvc := cargoService.CargoService{}
 	healthSvc := healthService.HealthService{}
+	authSvc := authService.AuthService{}
+	securedAuthSvc := securedAuthService.SecuredAuthService{}
+	userSvc := userService.UserService{}
 	ships.RegisterShipServiceRoutes(router, ships.ShipServiceHandler{
 		Handler: &shipSvc,
 	})
@@ -56,6 +70,15 @@ func New(logger zerolog.Logger, config *config.Config) *Server {
 	})
 	health.RegisterHealthServiceRoutes(router, health.HealthServiceHandler{
 		Handler: &healthSvc,
+	})
+	auth.RegisterAuthServiceRoutes(router, auth.AuthServiceHandler{
+		Handler: &authSvc,
+	})
+	auth.RegisterSecuredAuthServiceRoutes(router, auth.SecuredAuthServiceHandler{
+		Handler: &securedAuthSvc,
+	})
+	users.RegisterUserServiceRoutes(router, users.UserServiceHandler{
+		Handler: &userSvc,
 	})
 
 	return server

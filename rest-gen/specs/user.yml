@@ -1,0 +1,48 @@
+package: com.fleet.users
+imports:
+  - com.fleet.common
+types:
+  objects:
+    User:
+      builder: true
+      fields:
+        frn: common.UserFrn
+        name: string
+        email: string
+        groups: list<string>
+        createdAt: datetime
+        modifiedAt: datetime
+    ListUsersResponse:
+      builder: true
+      fields:
+        count: int
+        total: int
+        items: list<User>
+    CreateUserRequest:
+      fields:
+        email: string
+        password: string
+        name: string
+    CreateUserResponse:
+      fields:
+        frn: common.UserFrn      
+
+services:
+  UserService:
+    auth: "cookie:F_TOKEN"
+    base-path: /api/v1/users
+    context: true
+    endpoints:
+      listUsers:
+        http: GET /
+        args:
+          query:
+            offset: optional<long>
+            pageSize: optional<long>
+            sort: string
+        returns: ListUsersResponse
+      createUser:
+        http: POST /
+        args:
+          body: CreateUserRequest
+        returns: CreateUserResponse

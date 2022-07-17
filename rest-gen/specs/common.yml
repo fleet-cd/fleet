@@ -1,10 +1,31 @@
 package: com.fleet.common
 types:
   objects:
+    Frn:
+      alias: string
     ProductFrn:
-      alias: string
+      alias: Frn
     ShipFrn:
-      alias: string
+      alias: Frn
     CargoFrn:
-      alias: string
+      alias: Frn
+    UserFrn:
+      alias: Frn
+    GroupFrn:
+      alias: Frn
+    PermissionFrn:
+      alias: Frn
+    Permission:
+      bson: true
+      builder: true
+      fields:
+        frn: PermissionFrn
+        name: string
+        namespace: string
+        resourceType: string 
+        actions: list<string>
+        createdAt: datetime
+        modifiedAt: datetime
+    Password:
+      alias: list<byte>
     

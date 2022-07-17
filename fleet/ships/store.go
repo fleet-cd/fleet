@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/tgs266/fleet/fleet/persistence"
+	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/common"
 	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/entities"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -17,15 +18,19 @@ func CreateShip(ctx context.Context, ship entities.ShipEntity) error {
 	return persistence.InsertOneToCollection(ctx, "ships", ship)
 }
 
-func GetShip(ctx context.Context, frn string) (entities.ShipEntity, error) {
-	return persistence.FindOneByFrn[entities.ShipEntity](ctx, "ships", frn)
+func GetShip(ctx context.Context, frn common.ShipFrn) (entities.ShipEntity, error) {
+	return persistence.FindOneByFrn[entities.ShipEntity](ctx, "ships", string(frn))
 }
 
-func ListShips(ctx context.Context, offset *int64, pageSize *int64) ([]entities.ShipEntity, error) {
-	return persistence.List[entities.ShipEntity](ctx, "ships", options.Find().SetSkip(*offset).SetLimit(*pageSize))
+func DeleteShip(ctx context.Context, frn common.ShipFrn) error {
+	return persistence.DeleteOneByFrn[entities.ShipEntity](ctx, "ships", string(frn))
 }
 
-func GetCargo(ctx context.Context, frn string) ([]entities.CargoEntity, error) {
+func ListShips(ctx context.Context, offset int64, pageSize int64, sort bson.D) ([]entities.ShipEntity, error) {
+	return persistence.List[entities.ShipEntity](ctx, "ships", options.Find().SetSkip(offset).SetLimit(pageSize).SetSort(sort))
+}
+
+func GetCargo(ctx context.Context, frn common.ShipFrn) ([]entities.CargoEntity, error) {
 	col, err := persistence.GetCollection("cargo")
 	if err != nil {
 		return nil, err

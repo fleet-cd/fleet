@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/tgs266/fleet/fleet/persistence"
+	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/common"
 	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/entities"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -17,15 +18,15 @@ func CreateProduct(ctx context.Context, product entities.ProductEntity) error {
 	return persistence.InsertOneToCollection(ctx, "products", product)
 }
 
-func GetProduct(ctx context.Context, frn string) (entities.ProductEntity, error) {
-	return persistence.FindOneByFrn[entities.ProductEntity](ctx, "products", frn)
+func GetProduct(ctx context.Context, frn common.ProductFrn) (entities.ProductEntity, error) {
+	return persistence.FindOneByFrn[entities.ProductEntity](ctx, "products", string(frn))
 }
 
 func ListProducts(ctx context.Context, offset *int64, pageSize *int64) ([]entities.ProductEntity, error) {
 	return persistence.List[entities.ProductEntity](ctx, "products", options.Find().SetSkip(*offset).SetLimit(*pageSize))
 }
 
-func GetCargo(ctx context.Context, frn string) ([]entities.CargoEntity, error) {
+func GetCargo(ctx context.Context, frn common.ProductFrn) ([]entities.CargoEntity, error) {
 	col, err := persistence.GetCollection("cargo")
 	if err != nil {
 		return nil, err
