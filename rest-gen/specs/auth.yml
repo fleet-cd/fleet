@@ -24,6 +24,10 @@ types:
         namespace: string
         resourceType: string 
         actions: list<string>
+    GetGroupResponse:
+      fields:
+        group: entities.GroupEntity
+        expandedPermissions: list<common.Permission>
 
 services:
   AuthService:
@@ -52,6 +56,20 @@ services:
         args:
           body: CreateGroupRequest
         returns: entities.GroupEntity
+      getGroup:
+        http: GET /groups/{name}
+        args:
+          path:
+            name: string
+          query:
+            expandPermissions: boolean
+        returns: GetGroupResponse
+      deleteGroupPermission:
+        http: DELETE /groups/{name}/{permissionFrn}
+        args:
+          path:
+            name: string
+            permissionFrn: string
       listPermissions:
         http: GET /permissions
         args:

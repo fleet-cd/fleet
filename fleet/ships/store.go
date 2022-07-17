@@ -18,8 +18,9 @@ func CreateShip(ctx context.Context, ship entities.ShipEntity) error {
 	return persistence.InsertOneToCollection(ctx, "ships", ship)
 }
 
-func GetShip(ctx context.Context, frn common.ShipFrn) (entities.ShipEntity, error) {
-	return persistence.FindOneByFrn[entities.ShipEntity](ctx, "ships", string(frn))
+func GetShip(ctx context.Context, frn common.ShipFrn, constraint bson.M) (entities.ShipEntity, error) {
+	constraint["frn"] = string(frn)
+	return persistence.FindOne[entities.ShipEntity](ctx, "ships", constraint)
 }
 
 func DeleteShip(ctx context.Context, frn common.ShipFrn) error {

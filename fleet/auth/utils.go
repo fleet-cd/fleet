@@ -32,15 +32,7 @@ func IsAuth(authToken authentication.Token) (entities.UserEntity, error) {
 	return user, nil
 }
 
-func WhatCanIList(authToken authentication.Token, resource string) (bson.M, error) {
-	user, err := IsAuth(authToken)
-	if err != nil {
-		return nil, err
-	}
-	if utils.Contains(user.Groups, "admins") {
-		return bson.M{}, nil
-	}
-
+func GetAllUserParams(user entities.UserEntity) ([]common.Permission, error) {
 	groups, err := GetGroups(user.Groups)
 	if err != nil {
 		return nil, err
@@ -51,16 +43,31 @@ func WhatCanIList(authToken authentication.Token, resource string) (bson.M, erro
 	}
 
 	perms, err := GetPermissions(groupString)
+	return perms, err
+}
+
+func WhatCanIView(authToken authentication.Token, resource string) (bson.M, error) {
+	user, err := IsAuth(authToken)
+	if err != nil {
+		return nil, err
+	}
+	if utils.Contains(user.Groups, "admins") {
+		return bson.M{}, nil
+	}
+	perms, err := GetAllUserParams(user)
+	if err != nil {
+		return nil, err
+	}
+
 	accessNamespaces := []string{}
 	for _, p := range perms {
-		if p.ResourceType == resource && utils.Contains(p.Actions, "view") {
+		if p.ResourceType == resource || p.ResourceType == "*" && utils.Contains(p.Actions, "view") {
 			if p.Namespace == "*" {
 				return bson.M{}, nil
 			}
 			accessNamespaces = append(accessNamespaces, p.Namespace)
 		}
 	}
-
 	return bson.M{"namespace": bson.M{"$in": accessNamespaces}}, nil
 }
 
@@ -73,6 +80,28 @@ func CanI(authToken authentication.Token, resource string, namespace string, act
 		return true, nil
 	}
 	return false, fmt.Errorf("bad permissions")
+}
+
+func CanINoNamepsace(authToken authentication.Token, resource string, action Action) (bool, error) {
+	user, err := IsAuth(authToken)
+	if err != nil {
+		return false, err
+	}
+	if utils.Contains(user.Groups, "admins") {
+		return true, nil
+	}
+
+	perms, err := GetAllUserParams(user)
+	if err != nil {
+		return false, err
+	}
+
+	for _, p := range perms {
+		if p.ResourceType == resource || p.ResourceType == "*" && utils.Contains(p.Actions, action) {
+			return true, nil
+		}
+	}
+	return false, errors.NewForbidden(nil)
 }
 
 func IsAdmin(authToken authentication.Token) (bool, error) {

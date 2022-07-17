@@ -1,6 +1,7 @@
 package securedauth
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -41,6 +42,34 @@ func (service *SecuredAuthService) CreateGroup(ctx *gin.Context, body auth.Creat
 
 	panicker.CheckAndPanic(CreateGroup(ctx, groupEntity))
 	return groupEntity, nil
+}
+
+func (service *SecuredAuthService) GetGroup(ctx *gin.Context, expandPermissions bool, name string, token authentication.Token) (auth.GetGroupResponse, error) {
+	panicker.AndPanic(fleetAuth.CanINoNamepsace(token, "group", fleetAuth.ACTION_VIEW)).GetOrPanicFunc(func(err error) error {
+		panic(err)
+	})
+	group := panicker.AndPanic(GetGroup(ctx, name)).GetOrPanicFunc(errors.NewNotFound)
+	perms := []common.Permission{}
+	if expandPermissions {
+		perms = panicker.AndPanic(BactchGetPermissions(ctx, group.Permissions)).GetOrPanicFunc(errors.NewNotFound)
+	}
+	return auth.GetGroupResponse{
+		Group:               group,
+		ExpandedPermissions: perms,
+	}, nil
+}
+
+func (service *SecuredAuthService) DeleteGroupPermission(ctx *gin.Context, name string, permissionName string, token authentication.Token) error {
+	panicker.AndPanic(fleetAuth.CanINoNamepsace(token, "group", fleetAuth.ACTION_EDIT)).GetOrPanicFunc(func(err error) error {
+		panic(err)
+	})
+	group := panicker.AndPanic(GetGroup(ctx, name)).GetOrPanicFunc(errors.NewNotFound)
+	fmt.Println(group.Permissions)
+	fmt.Println(utils.FindAndRemove(group.Permissions, common.PermissionFrn(permissionName)))
+	group.Permissions = utils.FindAndRemove(group.Permissions, common.PermissionFrn(permissionName))
+	fmt.Println(group.Permissions)
+	panicker.CheckAndPanic(UpdateGroup(ctx, name, group))
+	return nil
 }
 
 func (service *SecuredAuthService) ListPermissions(ctx *gin.Context, sort string, token authentication.Token) ([]common.Permission, error) {

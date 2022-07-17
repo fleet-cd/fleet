@@ -11,6 +11,7 @@ import (
 	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/common"
 	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/entities"
 	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/errors"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 type CargoService struct{}
@@ -23,7 +24,7 @@ func (service *CargoService) CreateCargo(body cargo.CreateCargoRequest) (cargo.C
 		return cargo.Cargo{}, errors.NewProductNotFound(err, body.ProductFrn)
 	}
 
-	if _, err := ships.GetShip(context.TODO(), body.ShipFrn); err != nil {
+	if _, err := ships.GetShip(context.TODO(), body.ShipFrn, bson.M{}); err != nil {
 		return cargo.Cargo{}, errors.NewShipNotFound(err, body.ShipFrn)
 	}
 

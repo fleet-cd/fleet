@@ -46,3 +46,21 @@ services:
         args:
           body: CreateUserRequest
         returns: CreateUserResponse
+      getUser:
+        http: GET /{userFrn}
+        args:
+          path:
+            userFrn: string
+        returns: User
+      deleteUserGroup:
+        http: DELETE /{userFrn}/groups/{groupName}
+        args:
+          path:
+            userFrn: string
+            groupName: string
+      addUserGroup:
+        http: PUT /{userFrn}/groups/{groupName}
+        args:
+          path:
+            userFrn: string
+            groupName: string

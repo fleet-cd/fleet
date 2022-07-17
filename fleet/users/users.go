@@ -64,7 +64,7 @@ func (ss *UserService) ListUsers(ctx *gin.Context, offset *int64, pageSize *int6
 }
 
 func (ss *UserService) CreateUser(ctx *gin.Context, body users.CreateUserRequest, token authentication.Token) (users.CreateUserResponse, error) {
-	panicker.AndPanic(auth.CanI(token, "user", "*", auth.ACTION_CREATE)).GetOrPanicFunc(func(err error) error {
+	panicker.AndPanic(auth.CanINoNamepsace(token, "user", auth.ACTION_CREATE)).GetOrPanicFunc(func(err error) error {
 		panic(err)
 	})
 	now := time.Now()
@@ -82,4 +82,42 @@ func (ss *UserService) CreateUser(ctx *gin.Context, body users.CreateUserRequest
 		return users.CreateUserResponse{}, errors.NewInternalError(err)
 	}
 	return users.CreateUserResponse{Frn: user.Frn}, nil
+}
+
+func (ss *UserService) GetUser(ctx *gin.Context, userFrn string, token authentication.Token) (users.User, error) {
+	panicker.AndPanic(auth.CanINoNamepsace(token, "user", auth.ACTION_VIEW)).GetOrPanicFunc(func(err error) error {
+		panic(err)
+	})
+
+	user := panicker.AndPanic(GetUser(ctx, userFrn)).GetOrPanicFunc(errors.NewNotFound)
+	returnUser := users.NewUserBuilder().
+		SetFrn(user.Frn).
+		SetEmail(user.Email).
+		SetName(user.Name).
+		SetGroups(user.Groups).
+		SetCreatedAt(user.CreatedAt).
+		SetModifiedAt(user.ModifiedAt).Build()
+	return returnUser, nil
+}
+
+func (ss *UserService) DeleteUserGroup(ctx *gin.Context, groupName string, userFrn string, token authentication.Token) error {
+	panicker.AndPanic(auth.CanINoNamepsace(token, "user", auth.ACTION_EDIT)).GetOrPanicFunc(func(err error) error {
+		panic(err)
+	})
+
+	user := panicker.AndPanic(GetUser(ctx, userFrn)).GetOrPanicFunc(errors.NewNotFound)
+	user.Groups = utils.FindAndRemove(user.Groups, groupName)
+	panicker.CheckAndPanic(UpdateUser(ctx, userFrn, user))
+	return nil
+}
+
+func (ss *UserService) AddUserGroup(ctx *gin.Context, groupName string, userFrn string, token authentication.Token) error {
+	panicker.AndPanic(auth.CanINoNamepsace(token, "user", auth.ACTION_EDIT)).GetOrPanicFunc(func(err error) error {
+		panic(err)
+	})
+
+	user := panicker.AndPanic(GetUser(ctx, userFrn)).GetOrPanicFunc(errors.NewNotFound)
+	user.Groups = utils.AddUnique(user.Groups, groupName)
+	panicker.CheckAndPanic(UpdateUser(ctx, userFrn, user))
+	return nil
 }

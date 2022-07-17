@@ -20,3 +20,11 @@ func ListUsers(ctx context.Context, offset int64, pageSize int64, sort bson.D) (
 func CreateUser(ctx context.Context, userEntity entities.UserEntity) error {
 	return persistence.InsertOneToCollection(ctx, "users", userEntity)
 }
+
+func GetUser(ctx context.Context, frn string) (entities.UserEntity, error) {
+	return persistence.FindOneByFrn[entities.UserEntity](ctx, "users", frn)
+}
+
+func UpdateUser(ctx context.Context, frn string, user entities.UserEntity) error {
+	return persistence.UpdateOne[entities.UserEntity](ctx, "users", bson.M{"frn": frn}, user)
+}

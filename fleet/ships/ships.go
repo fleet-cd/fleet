@@ -47,8 +47,7 @@ func (ss *ShipService) CreateShip(body ships.CreateShipRequest, token authentica
 }
 
 func (ss *ShipService) ListShips(offset *int64, pageSize *int64, sort string, token authentication.Token) (ships.ListShipsResponse, error) {
-
-	request := panicker.AndPanic(auth.WhatCanIList(token, "ship")).GetOrPanicFunc(func(err error) error {
+	request := panicker.AndPanic(auth.WhatCanIView(token, "ship")).GetOrPanicFunc(func(err error) error {
 		panic(err)
 	})
 	total, err := Count(context.TODO(), request)
@@ -74,11 +73,11 @@ func (ss *ShipService) ListShips(offset *int64, pageSize *int64, sort string, to
 }
 
 func (ss *ShipService) GetShip(shipFrn string, token authentication.Token) (ships.Ship, error) {
-	panicker.AndPanic(auth.CanIFrn(token, shipFrn, auth.ACTION_VIEW)).GetOrPanicFunc(func(err error) error {
+	constraint := panicker.AndPanic(auth.WhatCanIView(token, "ship")).GetOrPanicFunc(func(err error) error {
 		panic(err)
 	})
 	frn := common.ShipFrn(shipFrn)
-	res, err := GetShip(context.Background(), frn)
+	res, err := GetShip(context.Background(), frn, constraint)
 	if err != nil {
 		return ships.Ship{}, errors.NewShipNotFound(err, frn)
 	}

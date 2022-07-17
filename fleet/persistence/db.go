@@ -148,6 +148,15 @@ func FindOne[T any](ctx context.Context, collection string, filter bson.M) (T, e
 	return val, err
 }
 
+func UpdateOne[T any](ctx context.Context, collection string, filter bson.M, value T) error {
+	col, err := GetCollection(collection)
+	if err != nil {
+		return err
+	}
+	_, err = col.UpdateOne(ctx, filter, bson.M{"$set": value}, &options.UpdateOptions{})
+	return err
+}
+
 func Count(ctx context.Context, collection string) (int64, error) {
 	col, err := GetCollection(collection)
 	if err != nil {
