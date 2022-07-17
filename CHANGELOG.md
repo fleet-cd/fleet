@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.5.0](https://github.com/fleet-cd/fleet/compare/v0.4.0...v0.5.0) (2022-07-17)
+
+
+### Features
+
+* add namespaces ([1f3c050](https://github.com/fleet-cd/fleet/commit/1f3c05066fa7eeb437af3b5b1deadfc307905678))
+* add new user modification apis ([546d957](https://github.com/fleet-cd/fleet/commit/546d95798ebffaa47b31076e0716c215beb40b9d))
+
 ## [0.4.0](https://github.com/fleet-cd/fleet/compare/v0.3.0...v0.4.0) (2022-07-17)
 
 
