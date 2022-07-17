@@ -10,13 +10,19 @@ func ErrorMiddleware() gin.HandlerFunc {
 		ctx.Next()
 		if ctx.Errors.Last() != nil {
 			err := ctx.Errors.Last().Err
-			if errors.IsStandardError(err) {
-				err := err.(errors.StandardError)
-				ctx.JSON(err.StatusCode, err)
-			} else {
-				ctx.JSON(500, err)
-			}
+			er := errors.GetError(err)
+			ctx.JSON(er.Code(), err)
 		}
+	}
+}
+
+func RecoveryMiddleware(handler func(ctx *gin.Context, err error)) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		defer func() {
+			if err := recover(); err != nil {
+				handler(ctx, err.(error))
+			}
+		}()
 		ctx.Next()
 	}
 }

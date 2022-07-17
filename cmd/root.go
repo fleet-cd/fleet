@@ -64,6 +64,6 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.Flags().StringP("config", "c", "", "Fleet config file path")
+	rootCmd.Flags().StringP("config", "c", "config.yaml", "Fleet config file path")
 	rootCmd.Flags().BoolP("debug", "d", false, "Debug logs")
 }

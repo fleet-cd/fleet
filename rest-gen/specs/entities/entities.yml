@@ -12,6 +12,7 @@ types:
         namespace: string
         createdAt: datetime
         modifiedAt: datetime
+        tags: list<string>
     ProductEntity:
       builder: true
       bson: true
@@ -28,5 +29,24 @@ types:
         frn: common.CargoFrn
         shipFrn: common.ShipFrn
         productFrn: common.ProductFrn
+        createdAt: datetime
+        modifiedAt: datetime
+    UserEntity:
+      builder: true
+      bson: true
+      fields:
+        frn: common.UserFrn
+        name: string
+        email: string
+        password: common.Password
+        groups: list<string>
+        createdAt: datetime
+        modifiedAt: datetime
+    GroupEntity:
+      builder: true
+      bson: true
+      fields:
+        name: string
+        permissions: list<common.PermissionFrn>
         createdAt: datetime
         modifiedAt: datetime

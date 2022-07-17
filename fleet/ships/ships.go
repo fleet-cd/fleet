@@ -4,59 +4,65 @@ import (
 	"context"
 	"time"
 
+	"github.com/tgs266/fleet/fleet/auth"
+	"github.com/tgs266/fleet/fleet/panicker"
 	"github.com/tgs266/fleet/fleet/utils"
+	"github.com/tgs266/fleet/fleet/validation"
 	"github.com/tgs266/fleet/frn"
 	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/cargo"
+	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/common"
 	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/entities"
 	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/errors"
 	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/ships"
+	"github.com/tgs266/rest-gen/runtime/authentication"
 )
 
-type ShipService struct{}
+type ShipService struct {
+}
 
-func (ss *ShipService) CreateShip(body ships.CreateShipRequest) (ships.Ship, error) {
+func (ss *ShipService) CreateShip(body ships.CreateShipRequest, token authentication.Token) (ships.Ship, error) {
 	ns := utils.OrDefault(body.Namespace, "default")
+	panicker.AndPanic(auth.CanI(token, "ship", ns, auth.ACTION_CREATE)).GetOrPanicFunc(func(err error) error {
+		panic(err)
+	})
+	panicker.OnFalse(validation.ValidateName(ns), errors.NewInvalidName(nil, ns))
+	panicker.OnFalse(validation.ValidateName(body.Name), errors.NewInvalidName(nil, body.Name))
 	now := time.Now()
-	shipFrn := frn.Generate("ship", ns).String()
+	shipFrn := frn.GenerateActual[common.ShipFrn]("ship", ns)
 
 	entity := entities.NewShipEntityBuilder().
 		SetName(body.Name).
 		SetNamespace(ns).
 		SetCreatedAt(now).
 		SetModifiedAt(now).
-		SetFrn(shipFrn)
+		SetFrn(shipFrn).
+		SetTags(body.Tags)
 
 	if err := CreateShip(context.Background(), entity.Build()); err != nil {
 		return ships.Ship{}, err
 	}
 
-	ship := ships.NewShipBuilder().
-		SetFrn(entity.Frn).
-		SetName(entity.Name).
-		SetNamespace(entity.Namespace).
-		SetCreatedAt(entity.CreatedAt).
-		SetModifiedAt(entity.ModifiedAt)
-	return ship.Build(), nil
+	ship := ships.Ship(entity)
+	return ship, nil
 }
 
-func (ss *ShipService) ListShips(offset *int64, pageSize *int64) (ships.ListShipsResponse, error) {
+func (ss *ShipService) ListShips(offset *int64, pageSize *int64, sort string, token authentication.Token) (ships.ListShipsResponse, error) {
+	panicker.AndPanic(auth.CanI(token, "ship", "*", auth.ACTION_VIEW)).GetOrPanicFunc(func(err error) error {
+		panic(err)
+	})
 	total, err := Count(context.TODO())
 	if err != nil {
 		return ships.ListShipsResponse{}, err
 	}
-	res, err := ListShips(context.TODO(), offset, pageSize)
+	sortMap := utils.GetSortMap(sort)
+
+	res, err := ListShips(context.Background(), utils.OrDefault(offset, 0), utils.OrDefault(pageSize, 0), sortMap)
 	if err != nil {
 		return ships.ListShipsResponse{}, err
 	}
 
 	results := utils.ConvertList(res, func(input entities.ShipEntity) ships.Ship {
-		return ships.NewShipBuilder().
-			SetFrn(input.Frn).
-			SetName(input.Name).
-			SetNamespace(input.Namespace).
-			SetCreatedAt(input.CreatedAt).
-			SetModifiedAt(input.ModifiedAt).
-			Build()
+		return ships.Ship(input)
 	})
 
 	return ships.NewListShipsResponseBuilder().
@@ -66,41 +72,47 @@ func (ss *ShipService) ListShips(offset *int64, pageSize *int64) (ships.ListShip
 		Build(), nil
 }
 
-func (ss *ShipService) GetShip(shipFrn string) (ships.Ship, error) {
-
-	res, err := GetShip(context.Background(), shipFrn)
+func (ss *ShipService) GetShip(shipFrn string, token authentication.Token) (ships.Ship, error) {
+	panicker.AndPanic(auth.CanIFrn(token, shipFrn, auth.ACTION_VIEW)).GetOrPanicFunc(func(err error) error {
+		panic(err)
+	})
+	frn := common.ShipFrn(shipFrn)
+	res, err := GetShip(context.Background(), frn)
 	if err != nil {
-		return ships.Ship{}, errors.NewShipNotFound(err, shipFrn)
+		return ships.Ship{}, errors.NewShipNotFound(err, frn)
 	}
 
-	shp := ships.NewShipBuilder().
-		SetFrn(shipFrn).
-		SetName(res.Name).
-		SetNamespace(res.Namespace).
-		SetCreatedAt(res.CreatedAt).
-		SetModifiedAt(res.ModifiedAt).Build()
+	shp := ships.Ship(res)
 
 	return shp, nil
 }
 
-func (ss *ShipService) GetCargo(frn string) ([]cargo.Cargo, error) {
-
-	res, err := GetCargo(context.Background(), frn)
+func (ss *ShipService) DeleteShip(shipFrn string, token authentication.Token) (common.ShipFrn, error) {
+	panicker.AndPanic(auth.CanIFrn(token, shipFrn, auth.ACTION_DELETE)).GetOrPanicFunc(func(err error) error {
+		panic(err)
+	})
+	frn := common.ShipFrn(shipFrn)
+	err := DeleteShip(context.Background(), frn)
 	if err != nil {
-		return nil, errors.NewShipNotFound(err, frn)
+		return "", errors.NewShipNotFound(err, frn)
 	}
 
-	results := []cargo.Cargo{}
-	for _, r := range res {
-		results = append(results, cargo.NewCargoBuilder().
-			SetFrn(r.Frn).
-			SetProductFrn(r.ProductFrn).
-			SetShipFrn(r.ShipFrn).
-			SetCreatedAt(r.CreatedAt).
-			SetModifiedAt(r.ModifiedAt).
-			Build(),
-		)
+	return frn, nil
+}
+
+func (ss *ShipService) GetCargo(frn string, token authentication.Token) ([]cargo.Cargo, error) {
+	panicker.AndPanic(auth.CanI(token, "cargo", "*", auth.ACTION_VIEW)).GetOrPanicFunc(func(err error) error {
+		panic(err)
+	})
+	shipFrn := common.ShipFrn(frn)
+	res, err := GetCargo(context.Background(), shipFrn)
+	if err != nil {
+		return nil, errors.NewShipNotFound(err, shipFrn)
 	}
+
+	results := utils.ConvertList(res, func(input entities.CargoEntity) cargo.Cargo {
+		return cargo.Cargo(input)
+	})
 
 	return results, nil
 }

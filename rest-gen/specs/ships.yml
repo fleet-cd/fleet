@@ -12,10 +12,12 @@ types:
         namespace: string
         createdAt: datetime
         modifiedAt: datetime
+        tags: list<string>
     CreateShipRequest:
       fields:
         name: string
         namespace: optional<string>
+        tags: list<string>
     ListShipsResponse:
       builder: true
       fields:
@@ -25,6 +27,7 @@ types:
 
 services:
   ShipService:
+    auth: "cookie:F_TOKEN"
     base-path: /api/v1/ships
     endpoints:
       listShips:
@@ -34,6 +37,7 @@ services:
           query: 
             offset: optional<long>
             pageSize: optional<long>
+            sort: string
         returns: ListShipsResponse
       getShip:
         http: GET /{shipFrn}
@@ -42,6 +46,13 @@ services:
           path:
             shipFrn: string
         returns: Ship
+      deleteShip:
+        http: DELETE /{shipFrn}
+        docs: delete ship
+        args:
+          path:
+            shipFrn: string
+        returns: common.ShipFrn
       createShip:
         http: POST /
         docs: creates a new ship

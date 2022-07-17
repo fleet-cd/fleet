@@ -1,21 +1,47 @@
 package: com.fleet.errors
+imports:
+  - com.fleet.common
 errors:
+  LoginFailed:
+    errorType: UNAUTHORIZED
+    docs: Login Failed
+    unsafeArgs:
+      email: string
+  InvalidToken:
+    errorType: UNAUTHORIZED
+    docs: Invalid token
+    unsafeArgs:
+      token: string
+  ExpiredToken:
+    errorType: UNAUTHORIZED
+    docs: Expired token
+    unsafeArgs:
+      token: string
+  
+  InvalidName:
+    errorType: INVALID_ARGUMENT
+    docs: Name field must only contain lowercase alphanumeric characters and dashes
+    safeArgs:
+      value: string
+  InvalidNamespace:
+    errorType: INVALID_ARGUMENT
+    docs: Namespace field must only contain lowercase alphanumeric characters and dashes
+    safeArgs:
+      value: string
+      
   ShipNotFound:
-    code: NOT_FOUND
-    statusCode: 404
+    errorType: NOT_FOUND
     docs: Fleet ship not found
-    safe-args:
-      frn: string
+    safeArgs:
+      frn: common.ShipFrn
   ProductNotFound:
-    code: NOT_FOUND
-    statusCode: 404
+    errorType: NOT_FOUND
     docs: Fleet product not found
-    safe-args:
-      frn: string
+    safeArgs:
+      frn: common.ProductFrn
   CargoNotFound:
-    code: NOT_FOUND
-    statusCode: 404
+    errorType: NOT_FOUND
     docs: Fleet cargo not found
-    safe-args:
-      frn: string
+    safeArgs:
+      frn: common.CargoFrn
     

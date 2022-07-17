@@ -30,9 +30,12 @@ func Connect(config *config.Config) error {
 	}
 
 	db = client.Database(config.MongoDB.Database)
-	createCollection("ships")
-	createCollection("products")
-	createCollection("cargo")
+	createCollection("permissions", true, "name")
+	createCollection("groups", false, "name")
+	createCollection("users", true, "email")
+	createCollection("ships", true)
+	createCollection("products", true)
+	createCollection("cargo", true)
 	return nil
 }
 
@@ -40,11 +43,11 @@ func createIndex(name string, opts *options.IndexOptions) mongo.IndexModel {
 	return mongo.IndexModel{
 		Keys: bson.M{
 			name: 1,
-		}, Options: &options.IndexOptions{},
+		}, Options: opts,
 	}
 }
 
-func createCollection(collection string) {
+func createCollection(collection string, useFrn bool, uniques ...string) {
 	createdAtIndex := createIndex("createdAt", options.Index())
 	modifiedAtIndex := createIndex("modifiedAt", options.Index())
 	t := new(bool)
@@ -60,9 +63,18 @@ func createCollection(collection string) {
 	defer cancel()
 	col.Indexes().CreateOne(ctx, modifiedAtIndex, options.CreateIndexes())
 
-	ctx, cancel = context.WithTimeout(context.TODO(), time.Second*2)
-	defer cancel()
-	col.Indexes().CreateOne(ctx, frnIndex, options.CreateIndexes())
+	if useFrn {
+		ctx, cancel = context.WithTimeout(context.TODO(), time.Second*2)
+		defer cancel()
+		col.Indexes().CreateOne(ctx, frnIndex, options.CreateIndexes())
+	}
+
+	for _, s := range uniques {
+		index := createIndex(s, &options.IndexOptions{Unique: t})
+		ctx, cancel = context.WithTimeout(context.TODO(), time.Second*2)
+		defer cancel()
+		col.Indexes().CreateOne(ctx, index, options.CreateIndexes())
+	}
 }
 
 func Ping() bool {
@@ -98,6 +110,25 @@ func FindOneByFrn[T any](ctx context.Context, collection string, frn string) (T,
 		return val, err
 	}
 	err = col.FindOne(ctx, bson.M{"frn": frn}, &options.FindOneOptions{}).Decode(&val)
+	return val, err
+}
+
+func DeleteOneByFrn[T any](ctx context.Context, collection string, frn string) error {
+	col, err := GetCollection(collection)
+	if err != nil {
+		return err
+	}
+	_, err = col.DeleteOne(ctx, bson.M{"frn": frn}, &options.DeleteOptions{})
+	return err
+}
+
+func FindOne[T any](ctx context.Context, collection string, filter bson.M) (T, error) {
+	var val T
+	col, err := GetCollection(collection)
+	if err != nil {
+		return val, err
+	}
+	err = col.FindOne(ctx, filter, &options.FindOneOptions{}).Decode(&val)
 	return val, err
 }
 

@@ -7,6 +7,7 @@ import (
 	"github.com/tgs266/fleet/fleet/utils"
 	"github.com/tgs266/fleet/frn"
 	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/cargo"
+	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/common"
 	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/entities"
 	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/errors"
 	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/products"
@@ -17,26 +18,21 @@ type ProductService struct{}
 func (ss *ProductService) CreateProduct(body products.CreateProductRequest) (products.Product, error) {
 	ns := utils.OrDefault(body.Namespace, "default")
 	now := time.Now()
-	shipFrn := frn.Generate("product", ns).String()
+	prodFrn := frn.GenerateActual[common.ProductFrn]("ship", ns)
 
 	entity := entities.NewProductEntityBuilder().
 		SetName(body.Name).
 		SetNamespace(ns).
 		SetCreatedAt(now).
 		SetModifiedAt(now).
-		SetFrn(shipFrn)
+		SetFrn(prodFrn)
 
 	if err := CreateProduct(context.Background(), entity.Build()); err != nil {
 		return products.Product{}, err
 	}
 
-	product := products.NewProductBuilder().
-		SetFrn(entity.Frn).
-		SetName(entity.Name).
-		SetNamespace(entity.Namespace).
-		SetCreatedAt(entity.CreatedAt).
-		SetModifiedAt(entity.ModifiedAt)
-	return product.Build(), nil
+	product := products.Product(entity)
+	return product, nil
 }
 
 func (ss *ProductService) ListProducts(offset *int64, pageSize *int64) (products.ListProductResponse, error) {
@@ -49,14 +45,8 @@ func (ss *ProductService) ListProducts(offset *int64, pageSize *int64) (products
 		return products.ListProductResponse{}, err
 	}
 
-	results := utils.ConvertList[entities.ProductEntity, products.Product](res, func(input entities.ProductEntity) products.Product {
-		return products.NewProductBuilder().
-			SetFrn(input.Frn).
-			SetName(input.Name).
-			SetNamespace(input.Namespace).
-			SetCreatedAt(input.CreatedAt).
-			SetModifiedAt(input.ModifiedAt).
-			Build()
+	results := utils.ConvertList(res, func(input entities.ProductEntity) products.Product {
+		return products.Product(input)
 	})
 
 	return products.NewListProductResponseBuilder().
@@ -67,40 +57,26 @@ func (ss *ProductService) ListProducts(offset *int64, pageSize *int64) (products
 }
 
 func (ss *ProductService) GetProduct(frn string) (products.Product, error) {
-
-	res, err := GetProduct(context.Background(), frn)
+	prodFrn := common.ProductFrn(frn)
+	res, err := GetProduct(context.Background(), prodFrn)
 	if err != nil {
-		return products.Product{}, errors.NewProductNotFound(err, frn)
+		return products.Product{}, errors.NewProductNotFound(err, prodFrn)
 	}
 
-	result := products.NewProductBuilder().
-		SetFrn(frn).
-		SetName(res.Name).
-		SetNamespace(res.Namespace).
-		SetCreatedAt(res.CreatedAt).
-		SetModifiedAt(res.ModifiedAt).Build()
-
+	result := products.Product(res)
 	return result, nil
 }
 
 func (ss *ProductService) GetCargo(frn string) ([]cargo.Cargo, error) {
-
-	res, err := GetCargo(context.Background(), frn)
+	prodFrn := common.ProductFrn(frn)
+	res, err := GetCargo(context.Background(), prodFrn)
 	if err != nil {
-		return nil, errors.NewProductNotFound(err, frn)
+		return nil, errors.NewProductNotFound(err, prodFrn)
 	}
 
-	results := []cargo.Cargo{}
-	for _, r := range res {
-		results = append(results, cargo.NewCargoBuilder().
-			SetFrn(r.Frn).
-			SetProductFrn(r.ProductFrn).
-			SetShipFrn(r.ShipFrn).
-			SetCreatedAt(r.CreatedAt).
-			SetModifiedAt(r.ModifiedAt).
-			Build(),
-		)
-	}
+	results := utils.ConvertList(res, func(input entities.CargoEntity) cargo.Cargo {
+		return cargo.Cargo(input)
+	})
 
 	return results, nil
 }

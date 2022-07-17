@@ -8,6 +8,7 @@ import (
 	"github.com/tgs266/fleet/fleet/ships"
 	"github.com/tgs266/fleet/frn"
 	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/cargo"
+	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/common"
 	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/entities"
 	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/errors"
 )
@@ -16,7 +17,7 @@ type CargoService struct{}
 
 func (service *CargoService) CreateCargo(body cargo.CreateCargoRequest) (cargo.Cargo, error) {
 	now := time.Now()
-	frn := frn.Generate("cargo", "main").String()
+	frn := common.CargoFrn(frn.Generate("cargo", "default").String())
 
 	if _, err := productService.GetProduct(context.TODO(), body.ProductFrn); err != nil {
 		return cargo.Cargo{}, errors.NewProductNotFound(err, body.ProductFrn)
