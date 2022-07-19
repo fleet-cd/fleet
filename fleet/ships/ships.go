@@ -2,10 +2,12 @@ package ships
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/tgs266/fleet/fleet/auth"
 	"github.com/tgs266/fleet/fleet/git"
+	"github.com/tgs266/fleet/fleet/kubernetes"
 	"github.com/tgs266/fleet/fleet/panicker"
 	"github.com/tgs266/fleet/fleet/utils"
 	"github.com/tgs266/fleet/fleet/validation"
@@ -37,6 +39,11 @@ func (ss *ShipService) CreateShip(body ships.CreateShipRequest, token authentica
 		SetModifiedAt(now).
 		SetFrn(shipFrn).
 		SetTags(body.Tags).SetSource(body.Source).Build()
+
+	if err := kubernetes.InitDeployment(entity); err != nil {
+		fmt.Println(err)
+		panic(err)
+	}
 
 	if err := CreateShip(context.Background(), entity); err != nil {
 		return ships.Ship{}, err

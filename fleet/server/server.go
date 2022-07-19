@@ -92,6 +92,9 @@ func New(logger zerolog.Logger, config *config.Config) *Server {
 	})
 
 	router.POST("/api/v1/products/:productFrn/versions/:versionFrn/artifact", productService.HandleAddVersionArtifact)
+	router.GET("/test", func(ctx *gin.Context) {
+		fmt.Println("fuck yeah")
+	})
 
 	return server
 }

@@ -3,3 +3,5 @@ rest-gen/generated/
 config.yml
 
 artifacts/
+
+kubeconfig

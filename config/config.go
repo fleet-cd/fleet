@@ -12,6 +12,7 @@ type Config struct {
 	Server      Server      `yaml:"server"`
 	Git         Git         `yaml:"git"`
 	Artifactory Artifactory `yaml:"artifactory"`
+	Kubernetes  Kubernetes  `yaml:"kubernetes"`
 }
 
 type MongoDB struct {
@@ -23,6 +24,10 @@ type Server struct {
 	Host     string `yaml:"host"`
 	Port     string `yaml:"port"`
 	BasePath string `yaml:"base_path"`
+}
+
+type Kubernetes struct {
+	ConfigPath string `yaml:"config_path"`
 }
 
 type Git struct {
