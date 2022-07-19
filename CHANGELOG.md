@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.6.0](https://github.com/fleet-cd/fleet/compare/v0.5.0...v0.6.0) (2022-07-19)
+
+
+### Features
+
+* add versions and code cleanup ([5873db8](https://github.com/fleet-cd/fleet/commit/5873db818aaa26671ff1c63d4541726a40bb98c1))
+* hold ([8e252f9](https://github.com/fleet-cd/fleet/commit/8e252f97554040ca425466015aa62297f0bae211))
+* improvements ([15e6fdc](https://github.com/fleet-cd/fleet/commit/15e6fdcc47f582e0aa73e3491b6853eb7e9a5443))
+
 ## [0.5.0](https://github.com/fleet-cd/fleet/compare/v0.4.0...v0.5.0) (2022-07-17)
 
 
