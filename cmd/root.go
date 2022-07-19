@@ -21,6 +21,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/spf13/cobra"
 	"github.com/tgs266/fleet/config"
+	"github.com/tgs266/fleet/fleet/git"
 	"github.com/tgs266/fleet/fleet/persistence"
 	"github.com/tgs266/fleet/fleet/server"
 )
@@ -52,6 +53,7 @@ to quickly create a Cobra application.`,
 		config := config.Read(configPath)
 		logger := zerolog.New(os.Stdout).With().Timestamp().Logger()
 		persistence.Connect(config)
+		git.NewClient(config)
 		server := server.New(logger, config)
 		server.Start()
 	},

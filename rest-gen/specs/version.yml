@@ -1,0 +1,27 @@
+package: com.fleet.versions
+imports:
+  - com.fleet.common
+types:
+  objects:
+    DependencyVersions:
+      bson: true
+      fields:
+        minVersion: optional<string> 
+        maxVersion: optional<string>
+    Version:
+      docs: |
+        Version is a version of a product
+      builder: true
+      bson: true
+      fields:
+        frn: common.VersionFrn
+        version: string
+        dependencies: map<string, DependencyVersions>
+        artifactLocation: string
+        createdAt: datetime
+        modifiedAt: datetime
+    CreateVersionRequest:
+      fields:
+        version: string
+        dependencies: optional<map<string, DependencyVersions>>
+        artifactLocation: optional<string>

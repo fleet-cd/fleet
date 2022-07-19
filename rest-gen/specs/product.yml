@@ -1,7 +1,8 @@
 package: com.fleet.products
 imports:
   - com.fleet.common
-  - com.fleet.cargo
+  - com.fleet.system
+  - com.fleet.versions
 types:
   objects:
     Product:
@@ -14,16 +15,24 @@ types:
         namespace: string
         createdAt: datetime
         modifiedAt: datetime
+        environment: system.Environment
+        versions: map<string, common.VersionFrn>
     CreateProductRequest:
       fields:
         name: string
         namespace: optional<string>
+        environment: system.Environment
     ListProductResponse:
       builder: true
       fields:
         count: int
         total: int
         items: list<Product>
+    GetProductResponse:
+      builder: true
+      fields:
+        product: Product
+        versions: list<versions.Version>        
 
 services:
   ProductService:
@@ -49,11 +58,14 @@ services:
         args:
           path:
             productFrn: string
-        returns: Product
-      getCargo:
-        http: GET /{productFrn}/cargo
-        docs: get all installations of a product
+          query:
+            expandVersions: optional<boolean>
+        returns: GetProductResponse
+      addVersion:
+        http: POST /{productFrn}/versions
+        docs: add new version of product
         args:
           path:
             productFrn: string
-        returns: list<cargo.Cargo>
+          body: versions.CreateVersionRequest
+        returns: versions.Version

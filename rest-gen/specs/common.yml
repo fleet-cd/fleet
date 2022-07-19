@@ -13,6 +13,15 @@ types:
       alias: Frn
     GroupFrn:
       alias: Frn
+    VersionFrn:
+      alias: Frn
+    GitSource:
+      fields:
+        owner: string 
+        repo: string
+    ArtifactSource:
+      fields:
+        path: string 
     Namespace:
       bson: true
       fields:

@@ -35,8 +35,10 @@ func Connect(config *config.Config) error {
 	createCollection("users", true, "email")
 	createCollection("ships", true)
 	createCollection("products", true)
+	createCollection("versions", true)
 	createCollection("cargo", true)
 	createCollection("namespaces", false, "name")
+	createCollection("environments", false, "name")
 
 	createDefaultNs(db)
 	return nil

@@ -24,6 +24,13 @@ func (h Handler[T]) GetOrPanicFunc(fcn func(err error) error) T {
 	return h.value
 }
 
+func (h Handler[T]) GetOr(val T) T {
+	if h.err != nil {
+		return val
+	}
+	return h.value
+}
+
 func (h Handler[T]) GetOrPanic() T {
 	if h.err != nil {
 		panic(h.err)

@@ -10,19 +10,19 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/tgs266/fleet/config"
 	authService "github.com/tgs266/fleet/fleet/auth"
-	cargoService "github.com/tgs266/fleet/fleet/cargo"
 	healthService "github.com/tgs266/fleet/fleet/health"
 	namespaceService "github.com/tgs266/fleet/fleet/namespace"
 	productService "github.com/tgs266/fleet/fleet/products"
 	securedAuthService "github.com/tgs266/fleet/fleet/secured_auth"
 	shipService "github.com/tgs266/fleet/fleet/ships"
+	systemService "github.com/tgs266/fleet/fleet/system"
 	userService "github.com/tgs266/fleet/fleet/users"
 	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/auth"
-	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/cargo"
 	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/common"
 	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/health"
 	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/products"
 	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/ships"
+	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/system"
 	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/users"
 	"github.com/tgs266/rest-gen/runtime/errors"
 )
@@ -56,21 +56,22 @@ func New(logger zerolog.Logger, config *config.Config) *Server {
 
 	shipSvc := shipService.ShipService{}
 	productSvc := productService.ProductService{}
-	cargoSvc := cargoService.CargoService{}
+	// cargoSvc := cargoService.CargoService{}
 	healthSvc := healthService.HealthService{}
 	authSvc := authService.AuthService{}
 	securedAuthSvc := securedAuthService.SecuredAuthService{}
 	userSvc := userService.UserService{}
 	namespaceSvc := namespaceService.NamespaceService{}
+	systemSvc := systemService.SystemService{}
 	ships.RegisterShipServiceRoutes(router, ships.ShipServiceHandler{
 		Handler: &shipSvc,
 	})
 	products.RegisterProductServiceRoutes(router, products.ProductServiceHandler{
 		Handler: &productSvc,
 	})
-	cargo.RegisterCargoServiceRoutes(router, cargo.CargoServiceHandler{
-		Handler: &cargoSvc,
-	})
+	// cargo.RegisterCargoServiceRoutes(router, cargo.CargoServiceHandler{
+	// 	Handler: &cargoSvc,
+	// })
 	health.RegisterHealthServiceRoutes(router, health.HealthServiceHandler{
 		Handler: &healthSvc,
 	})
@@ -86,6 +87,11 @@ func New(logger zerolog.Logger, config *config.Config) *Server {
 	common.RegisterNamespaceServiceRoutes(router, common.NamespaceServiceHandler{
 		Handler: &namespaceSvc,
 	})
+	system.RegisterSystemServiceRoutes(router, system.SystemServiceHandler{
+		Handler: &systemSvc,
+	})
+
+	router.POST("/api/v1/products/:productFrn/versions/:versionFrn/artifact", productService.HandleAddVersionArtifact)
 
 	return server
 }

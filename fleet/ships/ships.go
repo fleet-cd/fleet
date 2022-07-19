@@ -5,16 +5,16 @@ import (
 	"time"
 
 	"github.com/tgs266/fleet/fleet/auth"
+	"github.com/tgs266/fleet/fleet/git"
 	"github.com/tgs266/fleet/fleet/panicker"
 	"github.com/tgs266/fleet/fleet/utils"
 	"github.com/tgs266/fleet/fleet/validation"
 	"github.com/tgs266/fleet/frn"
-	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/cargo"
 	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/common"
-	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/entities"
 	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/errors"
 	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/ships"
 	"github.com/tgs266/rest-gen/runtime/authentication"
+	errs "github.com/tgs266/rest-gen/runtime/errors"
 )
 
 type ShipService struct {
@@ -30,45 +30,34 @@ func (ss *ShipService) CreateShip(body ships.CreateShipRequest, token authentica
 	now := time.Now()
 	shipFrn := frn.GenerateActual[common.ShipFrn]("ship", ns)
 
-	entity := entities.NewShipEntityBuilder().
+	entity := ships.NewShipBuilder().
 		SetName(body.Name).
 		SetNamespace(ns).
 		SetCreatedAt(now).
 		SetModifiedAt(now).
 		SetFrn(shipFrn).
-		SetTags(body.Tags)
+		SetTags(body.Tags).SetSource(body.Source).Build()
 
-	if err := CreateShip(context.Background(), entity.Build()); err != nil {
+	if err := CreateShip(context.Background(), entity); err != nil {
 		return ships.Ship{}, err
 	}
 
-	ship := ships.Ship(entity)
-	return ship, nil
+	return entity, nil
 }
 
 func (ss *ShipService) ListShips(offset *int64, pageSize *int64, sort string, token authentication.Token) (ships.ListShipsResponse, error) {
 	request := panicker.AndPanic(auth.WhatCanIView(token, "ship")).GetOrPanicFunc(func(err error) error {
 		panic(err)
 	})
-	total, err := Count(context.TODO(), request)
-	if err != nil {
-		return ships.ListShipsResponse{}, err
-	}
+	total := panicker.AndPanic(Count(context.TODO(), request)).GetOr(0)
 	sortMap := utils.GetSortMap(sort)
-
-	res, err := ListShips(context.Background(), request, utils.OrDefault(offset, 0), utils.OrDefault(pageSize, 0), sortMap)
-	if err != nil {
-		return ships.ListShipsResponse{}, err
-	}
-
-	results := utils.ConvertList(res, func(input entities.ShipEntity) ships.Ship {
-		return ships.Ship(input)
-	})
-
+	res := panicker.AndPanic(
+		ListShips(context.Background(), request, utils.OrDefault(offset, 0), utils.OrDefault(pageSize, 0), sortMap),
+	).GetOrPanicFunc(errs.NewNotFound)
 	return ships.NewListShipsResponseBuilder().
 		SetTotal(int(total)).
-		SetCount(len(results)).
-		SetItems(results).
+		SetCount(len(res)).
+		SetItems(res).
 		Build(), nil
 }
 
@@ -100,19 +89,19 @@ func (ss *ShipService) DeleteShip(shipFrn string, token authentication.Token) (c
 	return frn, nil
 }
 
-func (ss *ShipService) GetCargo(frn string, token authentication.Token) ([]cargo.Cargo, error) {
-	panicker.AndPanic(auth.CanI(token, "cargo", "*", auth.ACTION_VIEW)).GetOrPanicFunc(func(err error) error {
+func (ss *ShipService) GetConfig(frn string, token authentication.Token) (ships.ConfigResponse, error) {
+	constraint := panicker.AndPanic(auth.WhatCanIView(token, "ship")).GetOrPanicFunc(func(err error) error {
 		panic(err)
 	})
 	shipFrn := common.ShipFrn(frn)
-	res, err := GetCargo(context.Background(), shipFrn)
+	res, err := GetShip(context.Background(), shipFrn, constraint)
 	if err != nil {
-		return nil, errors.NewShipNotFound(err, shipFrn)
+		return ships.ConfigResponse{}, errors.NewShipNotFound(err, shipFrn)
 	}
 
-	results := utils.ConvertList(res, func(input entities.CargoEntity) cargo.Cargo {
-		return cargo.Cargo(input)
-	})
+	cfg := panicker.AndPanic(git.GetConfig(res.Source)).GetOrPanicFunc(errs.NewInternalError)
 
-	return results, nil
+	return ships.ConfigResponse{
+		Body: cfg,
+	}, nil
 }

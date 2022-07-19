@@ -2,6 +2,7 @@ package: com.fleet.ships
 imports:
   - com.fleet.common
   - com.fleet.cargo
+  - com.fleet.products
 types:
   objects:
     Ship:
@@ -13,17 +14,28 @@ types:
         createdAt: datetime
         modifiedAt: datetime
         tags: list<string>
+        source: common.GitSource
     CreateShipRequest:
       fields:
         name: string
         namespace: optional<string>
         tags: list<string>
+        source: common.GitSource 
     ListShipsResponse:
       builder: true
       fields:
         count: int
         total: int
         items: list<Ship>
+    # GetCargoResponse:
+    #   builder: true
+    #   fields:
+    #     cargo: list<cargo.Cargo>
+    #     products: map<common.CargoFrn, products.Product>
+    ConfigResponse:
+      builder: true
+      fields:
+        body: string
 
 services:
   ShipService:
@@ -59,10 +71,17 @@ services:
         args:
           body: CreateShipRequest
         returns: Ship
-      getCargo:
-        http: GET /{shipFrn}/cargo
+      # getCargo:
+      #   http: GET /{shipFrn}/cargo
+      #   docs: get all installations
+      #   args:
+      #     path:
+      #       shipFrn: string
+      #   returns: GetCargoResponse
+      getConfig:
+        http: GET /{shipFrn}/config
         docs: get all installations
         args:
           path:
             shipFrn: string
-        returns: list<cargo.Cargo>
+        returns: ConfigResponse

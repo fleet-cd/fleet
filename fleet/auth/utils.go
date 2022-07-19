@@ -2,6 +2,7 @@ package auth
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/tgs266/fleet/fleet/utils"
 	"github.com/tgs266/fleet/rest-gen/generated/com/fleet/entities"
@@ -120,5 +121,26 @@ func CanIFrn(authToken authentication.Token, resourceFrn string, action Action) 
 	if utils.Contains(user.Groups, "admins") {
 		return true, nil
 	}
-	return false, fmt.Errorf("bad permissions")
+	perms, err := GetAllUserParams(user)
+	if err != nil {
+		return false, err
+	}
+
+	checkResource := strings.Split(resourceFrn, ":")[1]
+	checkNs := strings.Split(resourceFrn, ":")[2]
+	canNs := false
+	canResource := false
+
+	for _, p := range perms {
+		if p.ResourceType == checkResource || p.ResourceType == "*" && utils.Contains(p.Actions, action) {
+			canResource = true
+		}
+		if p.Namespace == checkNs || p.Namespace == "*" && utils.Contains(p.Actions, action) {
+			canNs = true
+		}
+		if canNs && canResource {
+			return true, nil
+		}
+	}
+	return false, errors.NewForbidden(nil)
 }

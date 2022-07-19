@@ -1,0 +1,35 @@
+package: com.fleet.system
+imports:
+  - com.fleet.common
+types:
+  objects:
+    Environment:
+      fields:
+        name: string 
+        image: string
+        createdAt: datetime
+        modifiedAt: datetime
+    CreateEnvironmentRequest:
+      fields:
+        name: string 
+        image: string
+
+services:
+  SystemService:
+    auth: "cookie:F_TOKEN"
+    base-path: /api/v1/system
+    endpoints:
+      listEnvironments:
+        http: GET /environments
+        docs: list environments
+        args:
+          query:
+            sort: string
+        returns: list<Environment>
+      createEnvironment:
+        http: POST /environments
+        docs: list environments
+        args:
+          body: CreateEnvironmentRequest
+        returns: Environment
+      

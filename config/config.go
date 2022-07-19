@@ -8,8 +8,10 @@ import (
 )
 
 type Config struct {
-	MongoDB MongoDB `yaml:"mongodb"`
-	Server  Server  `yaml:"server"`
+	MongoDB     MongoDB     `yaml:"mongodb"`
+	Server      Server      `yaml:"server"`
+	Git         Git         `yaml:"git"`
+	Artifactory Artifactory `yaml:"artifactory"`
 }
 
 type MongoDB struct {
@@ -21,6 +23,14 @@ type Server struct {
 	Host     string `yaml:"host"`
 	Port     string `yaml:"port"`
 	BasePath string `yaml:"base_path"`
+}
+
+type Git struct {
+	GithubAccessToken string `yaml:"github_access_token"`
+}
+
+type Artifactory struct {
+	AccessToken string `yaml:"access_token"`
 }
 
 func Read(path string) *Config {

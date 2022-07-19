@@ -5,40 +5,22 @@ types:
   objects:
     Cargo:
       docs: |
-        Cargo are actual installed products
+        Cargo is a versioned install of a product
       builder: true
       fields:
         frn: common.CargoFrn
         productFrn: common.ProductFrn
-        shipFrn: common.ShipFrn
+        versionFrn: common.VersionFrn
         createdAt: datetime
         modifiedAt: datetime
-    CreateCargoRequest:
-      builder: true
-      fields:
-        productFrn: common.ProductFrn
-        shipFrn: common.ShipFrn
-    ListCargoResponse:
-      builder: true
-      fields:
-        count: int
-        total: int
-        items: list<Cargo>
 
-services:
-  CargoService:
-    base-path: /api/v1/cargo
-    endpoints:
-      createCargo:
-        http: POST /
-        docs: creates a new installation
-        args:
-          body: CreateCargoRequest
-        returns: Cargo
-      listCargo:
-        http: GET /
-        args:
-          query: 
-            offset: optional<long>
-            pageSize: optional<long>
-        returns: ListCargoResponse
+# services:
+#   CargoService:
+#     base-path: /api/v1/cargo
+#     endpoints:
+#       createCargo:
+#         http: POST /
+#         docs: creates a new installation
+#         args:
+#           body: CreateCargoRequest
+#         returns: Cargo
